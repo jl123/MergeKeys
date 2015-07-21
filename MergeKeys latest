@@ -1,0 +1,4416 @@
+#NoEnv
+SendMode Input
+#WinActivateForce
+#NoTrayIcon
+#SingleInstance force
+Sysget, Mon2, Monitor, 2
+DetectHiddenText, On
+SetDefaultMouseSpeed, 0
+OnExit, handle_exit
+
+SetTitleMatchMode,2
+SetWorkingDir, %A_ScriptDir%\Setup Files
+version=2.11
+versurl=http://ns2059.hostgator.com/~jl12345/joe/testing.html
+powerurl=http://ns2059.hostgator.com/~jl12345/joe/power.html
+newsurl=http://ns2059.hostgator.com/~jl12345/joe/news.html
+
+SetWinDelay,-1
+SetKeyDelay,-1
+SetMouseDelay,-1
+SetControlDelay, -1
+
+IfNotExist, %A_ScriptDir%\Setup Files
+  {
+  FileCreateDir, %A_ScriptDir%\Setup Files
+  sleep, 100
+  SetWorkingDir, %A_ScriptDir%\Setup Files
+  FileMove,c:\*layout.txt,%A_WorkingDir%
+  FileMove,c:\playersetup.ini,%A_WorkingDir%
+  }
+  
+ifNotExist, %A_ScriptDir%\Setup Files\amazon.gif
+  URLDownloadToFile,http://www.runbetterpoker.com/joe/amazon.gif,%A_ScriptDir%\Setup Files\amazon.gif
+  
+ifExist, %A_SCriptDir%\Mug.ico
+  FileMove,%A_SCriptDir%\Mug.ico, %A_WorkingDir%
+  
+GoSub, VersionCheck
+if version!=%currversion%
+  MsgBox,,NEW VERSION AVAILABLE,Your current installaton (Beta %version%) is not up to date`n`nBeta %currversion% avaiable at www.RunBetterPoker.com,10
+
+GoSub, PowerCheck
+if power!=1
+  {
+  MsgBox, MergeKeys has been shut down .  Please see RunBetterPoker.com or TwoPlusTwo.com thread for more information.
+  GoSub, handle_exit
+  }
+
+GoSub, NewsCheck
+if news!=0
+  MsgBox, %news%
+
+yesbox:=1
+count:=0
+run:=0
+loop,18
+  {
+  table%A_Index%=0
+  }
+
+listselect1:=
+listselect2:=
+listselect3:=
+listselect4:=
+listselect5:=
+lobtoggle:=1
+aacheck:=0
+
+
+
+;Loop
+;WinWait,ahk_class SWT_Window0
+;WinGet,id,list,ahk_class
+;loop, class
+;  if contains `(Connected`)
+;    if does not contain Not Logged In
+;Loop, parse,-
+  
+
+GoSub, ReadIni
+
+;------------------------------------MOVE TO ReadIni SECTION
+/*
+IniRead, colscheme, %A_WorkingDir%\playersetup.ini, colscheme, custcol
+;MsgBox,%colscheme%
+if colscheme=ERROR
+  barcol=0x98A2A6
+else
+  barcol=%colscheme%
+*/  
+;--------------------------------------------GUI
+LaunchGui:
+lscount:=
+Gui, Add, Tab, x0 y0 w740 h600, Pot Betting|Layout Manager|Tournament/SNG|Random Beta Keys|Player Setup|DONATE
+Gui, Tab, Pot Betting
+;----------------------------------------------------------------------
+Gui, Add, Text, x42 y30 w160 h20 +Center, POT BETTING
+Gui, Add, Text, x142 y60 w110 h20 +Center, KEY COMBINATION
+Gui, Add, Text, x12 y90 w100 h20 , 1/2 Pot Sized Bet
+Gui, Add, Text, x12 y120 w100 h20 , 2/3 Pot Sized Bet
+Gui, Add, Text, x12 y150 w100 h20 , 3/4 Pot Sized Bet
+Gui, Add, Text, x12 y180 w100 h20 , Pot Sized Bet
+Gui, Add, Text, x12 y210 w100 h20 , All-in 
+Gui, Add, Hotkey, x132 y90 w150 h20 vhotkey1, %hotkey1%
+Gui, Add, Hotkey, x132 y120 w150 h20 vhotkey2, %hotkey2%
+Gui, Add, Hotkey, x132 y150 w150 h20 vhotkey3, %hotkey3%
+Gui, Add, Hotkey, x132 y180 w150 h20 vhotkey4, %hotkey4%
+Gui, Add, Hotkey, x132 y210 w150 h20 vhotkey5, %hotkey5%
+
+;---------------------------------------------------------------------------
+Gui, Add, Text, x52 y250 w160 h20 +Center, OTHER ACTIONS
+Gui, Add, Text, x12 y280 w100 h20 , Bet/Raise
+Gui, Add, Text, x12 y310 w100 h20 , Check
+Gui, Add, Text, x12 y340 w100 h20 , Call
+Gui, Add, Text, x12 y370 w110 h20 , Fold
+Gui, Add, Text, x12 y400 w100 h25 , Click Bet Amount Box
+Gui, Add, Hotkey, x132 y280 w150 h20 vhotkey6, %hotkey6%
+Gui, Add, Hotkey, x132 y310 w150 h20 vhotkey7, %hotkey7%
+Gui, Add, Hotkey, x132 y340 w150 h20 vhotkey8, %hotkey8%
+Gui, Add, Hotkey, x132 y370 w150 h20 vhotkey9, %hotkey9%
+Gui, Add, Hotkey, x132 y400 w150 h20 vhotkey10, %hotkey10%
+;--------------------------------------------------------------------------
+Gui, Add, Text, x462 y30 w100 h20 , MOUSE BUTTONS
+Gui, Add, Text, x357 y60 w140 h20 , Right Mouse Button
+Gui, Add, Text, x357 y91 w140 h20 , Thumb Button 1
+Gui, Add, Text, x357 y123 w140 h20 , Thumb Button 2
+Gui, Add, Text, x357 y157 w140 h20 , Middle Button (Wheel Click)
+;---------------------------------------------------------------------Mouse button list selector
+listselect1=%rb%
+lscoords=x512 y60 w130 h20 vrb
+GoSub,MBListSelect
+listselect2=%xb1%
+lscoords=x512 y90 w130 h20 vxb1
+GoSub,MBListSelect
+listselect3=%xb2%
+lscoords=x512 y120 w130 h20 vxb2
+GoSub,MBListSelect
+listselect4=%mb%
+lscoords=x512 y150 w130 h20 vmb
+GoSub, MBListSelect
+;----------------------------------------------------------------------
+Gui, Add, Text, x362 y205 w150 h20 , Check and call hotkeys do both
+Gui, Add, Radio, x522 y203 w60 h20 %ccon% vcctoggle, On
+Gui, Add, Radio, x592 y203 w70 h20 %ccoff%, Off
+Gui, Add, Text, x362 y235 w150 h30 , Auto-fire bet/raise when pot betting buttons used
+Gui, Add, Radio, x522 y235 w60 h20 %afon% vaftoggle, On
+Gui, Add, Radio, x592 y235 w70 h20 %afoff%, Off
+Gui, Add, Text, x362 y275 w150 h20 , Move Mouse To Active Table
+Gui, Add, Radio, x522 y275 w60 h20 %amon% vamtoggle, On
+Gui, Add, Radio, x592 y275 w70 h20 %amoff%, Off
+Gui, Add, Text, x362 y305 w150 h30 strike, Auto click bet amt box when new table active (disabled)
+Gui, Add, Radio, x522 y305 w60 h20 %bbon% vbbtoggle, On
+Gui, Add, Radio, x592 y305 w70 h20 %bboff%, Off
+Gui, Add, Text, x362 y345 w150 h30 , Frame Active Table
+Gui, Add, Radio, x522 y340 w60 h20 %frameon% vframetoggle, On
+Gui, Add, Radio, x592 y340 w70 h20 %frameoff%, Off
+Gui, Add, Text, x362 y370 w240 h30 , Frame thickness (7  max)
+Gui, Add, Edit, x522 y370 w50 h20 NUMBER vfthick, %fthick%
+;Gui, Add, Text, x362 y375 w150 h30 , Auto accept "Prefer to check?" pop ups
+;Gui, Add, Radio, x522 y375 w60 h20 %acheckon% vactoggle, On
+;Gui, Add, Radio, x592 y375 w70 h20 %acheckoff%, Off
+Gui, Add, Text, x372 y442 w120 h20 , Toggle Hotkeys On/Off
+Gui, Add, Hotkey, x502 y440 w150 h20 vhotkey11, %hotkey11%
+;--------------------------------------------------------------------------
+Gui, Add, Button, x12 y440 w160 h30 gSave, Save and Continue
+Gui, Add, Button, x182 y440 w160 h30 gClear, Clear Unsaved Changes
+Gui, Add, Text, x8 y475 w728 h20 , If you are planning to shop at Amazon, please use the link below to help support MergeKeys.
+Gui, Add, Picture, x8 y495 w728 h90 gRBMPSU, %A_WorkingDir%\amazon.gif
+
+
+;------------------------------------------------------------------------
+Gui, Tab, Layout Manager
+
+Gui, Add, Button, x12 y60 w370 h50 gNewLayout, Save New Layout
+
+Gui, Add, Text, x12 y160 w180 h30 , Snaps tables to proper layout based on how many tables are open.
+Gui, Add, Hotkey, x202 y160 w140 h20 vhotkey12, %hotkey12%
+Gui, Add, Text, x12 y202 w180 h20 , Stack tables
+Gui, Add, Hotkey, x202 y200 w140 h20 vhotkey13, %hotkey13%
+Gui, Add, Text, x12 y240 w180 h20 , List Assigned Tables
+Gui, Add, Hotkey, x202 y240 w140 h20 vhotkey14, %hotkey14%
+Gui, Add, Text, x12 y270 w180 h40 , Purge table assignments (useful in case of errors that cause incorrect table count).
+Gui, Add, Hotkey, x202 y280 w140 h20 vhotkey15, %hotkey15%
+Gui, Add, Text, x12 y320 w180 h40 , Activate/Minimize Lobby
+Gui, Add, Hotkey, x202 y320 w140 h20 vhotkey16, %hotkey16%
+Gui, Add, Text, x12 y350 w150 h30 , Cascade
+Gui, Add, Hotkey, x202 y350 w110 h20 vhotkey23, %hotkey23%
+Gui, Add, Text, x12 y380 w150 h30 , Cascade offset
+Gui, Add, Edit, x202 y380 w50 h20 NUMBER vcascoff, %cascoff%
+
+Gui, Add, Text, x392 y40 w330 h400 ,  LAYOUT SAVER CONTROLS:`n6 layouts can be saved (1 to 2 tables`, 3 to 4 tables`, 5 to 6 tables`, 7 to 8 tables`, 9 to 10 tables`, 11 to 12 tables, 13 to 14 tables, 15 to 16 tables, 17 to 18 tables).`n`nTABLE REASSIGNMENT:`nCTRL+1-9 Assign active table to slot 1-9`n`nCTRL+0 Assign active table to slot 10`n`nCTRL+[Assign active table to slot 11`n`nCTRL+]Assign active table to slot 12`n`nRe-running the table manager after re-assignment will snap tables to new assigned locations.`n`nSTACK TABLES:`nWill Stack all tables in position of currently active table.`n`nMake sure "Bring Active Game to Front" is checked in client settings if you use this function.
+
+
+Gui, Add, Button, x12 y440 w160 h30 gSave, Save and Continue
+Gui, Add, Button, x182 y440 w160 h30 gClear, Clear Unsaved Changes
+Gui, Add, Text, x8 y475 w728 h20 , If you are planning to shop at Amazon, please use the link below to help support MergeKeys.
+Gui, Add, Picture, x8 y495 w728 h90 gRBMPSU, %A_WorkingDir%\amazon.gif
+
+
+;==========--
+Gui, Tab, Tournament/SNG
+
+Gui, Add, Text, x12 y30 w240 h30 , Handle Tourn/SNG Reg Windows 
+Gui, Add, Radio, x190 y30 w50 h20 %tregon% vtregtoggle, On
+Gui, Add, Radio, x260 y30 w50 h20 %tregoff%, Off
+;Gui, Add, Text, x12 y60 w240 h30 , Close SNG win popups
+;Gui, Add, Radio, x190 y60 w50 h20 %winon% vwintoggle, On
+;Gui, Add, Radio, x260 y60 w50 h20 %winoff%, Off
+Gui, Add, Text, x12 y90 w240 h30 , SNG/Tournament register (lobby)
+Gui, Add, Text, x190 y90 w300 h30, Shift + Left Click on the SNG/tournament you want to register for (also works for de-reg)
+
+Gui, Add, Button, x12 y440 w160 h30 gSave, Save and Continue
+Gui, Add, Button, x182 y440 w160 h30 gClear, Clear Unsaved Changes
+Gui, Add, Text, x8 y475 w728 h20 , If you are planning to shop at Amazon, please use the link below to help support MergeKeys.
+Gui, Add, Picture, x8 y495 w728 h90 gRBMPSU, %A_WorkingDir%\amazon.gif
+
+;==========--
+Gui, Tab, Random Beta Keys
+Gui, Add, Text, x12 y90 w100 h30 , Stand Pat/Draw (temp disabled)
+Gui, Add, Hotkey, x132 y90 w150 h20 vhotkey17, %hotkey17%
+Gui, Add, Text, x12 y135 w325 h50 , May have issues if pressed in certain situations. Do not set this if you do not play draw games.  Shoot me a message for details.
+Gui, Add, Text, x50 y250 w160 h20 +Center, VIRTUAL MOUSE WHEEL
+Gui, Add, Text, x12 y280 w100 h20 , Bet amount down
+Gui, Add, Text, x12 y310 w100 h20 , Bet amount up
+Gui, Add, Hotkey, x132 y280 w150 h20 vhotkey18, %hotkey18%
+Gui, Add, Hotkey, x132 y310 w150 h20 vhotkey19, %hotkey19%
+Gui, Add, Text, x12 y370 w100 h20 ,Show next table
+Gui, Add, Text, x12 y400 w100 h20 ,Show last table
+Gui, Add, Hotkey, x132 y370 w150 h20 vhotkey20, %hotkey20%
+Gui, Add, Hotkey, x132 y400 w150 h20 vhotkey21, %hotkey21%
+;Gui, Add, Text, x362 y30 w350 h50 , BELOW FUNCTION IS NOT COMPLETE.  IT MAY CAUSE UNEXPECTED BEHAVIOR IN NON-MERGE WINDOWS AT THS TIME.  PLEASE REPORT ANY ODD BEHAVIOR.
+Gui, Add, Text, x362 y70 w150 h30 , Check if available (when folding)
+Gui, Add, Radio, x522 y70 w60 h20 %acheckon% vactoggle, On
+Gui, Add, Radio, x592 y70 w70 h20 %acheckoff%, Off
+Gui, Add, Text,x362 y100 w150 h30 , Auto-start MergeMods (if installed)
+Gui, Add, Radio, x522 y100 w60 h20 %mmon% vmmtoggle, On
+Gui, Add, Radio, x592 y100 w70 h20 %mmoff%, Off
+Gui, Add, Text, x362 y130 w150 h30 , Minimize MergeKeys to tray
+Gui, Add, Radio, x522 y130 w60 h20 %mintrayon% vmintraytoggle, On
+Gui, Add, Radio, x592 y130 w70 h20 %mintrayoff%, Off
+Gui, Add, Text, x362 y160 w150 h30 , Handle Buy In Windows (cash only)
+Gui, Add, Radio, x522 y160 w60 h20 %abion% vabitoggle, On
+Gui, Add, Radio, x592 y160 w70 h20 %abioff%, Off
+Gui, Add, Text, x362 y190 w150 h30 , Auto-activate window under cursor
+Gui, Add, Radio, x522 y190 w60 h20 %action% vactitoggle, On
+Gui, Add, Radio, x592 y190 w70 h20 %actioff%, Off
+Gui, Add, Text, x362 y223 w150 h30 , Auto Time Bank
+Gui, Add, Radio, x522 y220 w60 h20 %tbon% vtbtoggle, On
+Gui, Add, Radio, x592 y220 w70 h20 %tboff%, Off
+Gui, Add, Text, x362 y250 w150 h30 , Sit back in automatically
+Gui, Add, Radio, x522 y250 w60 h20 %sion% vsitoggle, On
+Gui, Add, Radio, x592 y250 w70 h20 %sioff%, Off
+Gui, Add, Text, x362 y277 w150 h20 , Space Bar
+listselect5=%sp%
+lscoords=x522 y277 w130 h20 vsp
+GoSub, MBListSelect
+
+Gui, Add, Button, x12 y440 w160 h30 gSave, Save and Continue
+Gui, Add, Button, x182 y440 w160 h30 gClear, Clear Unsaved Changes
+Gui, Add, Text, x8 y475 w728 h20 , If you are planning to shop at Amazon, please use the link below to help support MergeKeys.
+Gui, Add, Picture, x8 y495 w728 h90 gRBMPSU, %A_WorkingDir%\amazon.gif
+
+
+;-----------------------------------------------------------------------
+Gui, Tab, Player Setup
+Gui, Add, Text, x12 y30 w240 h70 , AUTO SETUP (client and user name)`n`n1) Click Auto Setup`n2) Click on Merge Lobby
+Gui, Add, Button, x12 y90 w160 h30 gautosetup, Auto Setup
+Gui, Add, Text, x12 y145 w400 h60 , MERGEKEYS SHOULD ALWAYS BE RUN IN ADMINISTRATOR MODE.
+Gui, Add, Text, x450 y30 w170 h15 underline cBlue gRBMPSU,CLICK HERE FOR SETUP VIDEO
+Gui, Add, Text, x250 y30 w200 h30 , Client name:
+Gui, Add, Text, x328 y30 w100 h20 , %client%
+;Gui, Add, Edit, x262 y60 w170 h20 vclient, %client%
+Gui, Add, Text, x250 y60 w200 h20 , User name:
+Gui, Add, Text, x328 y60 w100 h20 , %username%
+;Gui, Add, Edit, x262 y100 w170 h20 vusername, %username%
+;Gui, Add, Text, x12 y195 w500 h60 , IF MOUSE WHEEL DOES NOT WORK`, OPEN 1 TABLE (PLAY MONEY OK)`, WAIT FOR THE CONTROL PICTURED BELOW TO APPEAR, HIT EXECUTE, THEN CLICK ON THE TABLE AGAIN.  MAKE SURE TABLE IS SET TO NORMAL SIZE FOR THIS, NOT MINI.  THIS SHOULDN'T BE NECESSARY FOR RPM, CARBON, LOCK AND GR88 (POSSIBLY SOME OTHERS).
+;Gui, Add, Picture, x12 y250 w503 h74 , %A_WorkingDir%\slideimage1.jpg
+
+;Gui, Add, Button, x142 y330 w240 h40 gCustCol, Execute
+;Gui, Add, Text, x12 y380 w150 h20 , TABLE MODE
+;Gui, Add, Radio, x12 y395 w60 h20 %minimodeoff% vtablemode, Normal
+;Gui, Add, Radio, x82 y395 w70 h20 %minimodeon%, Mini
+Gui, Add, Button, x12 y440 w160 h30 gSave, Save and Continue
+Gui, Add, Button, x182 y440 w160 h30 gClear, Clear Unsaved Changes
+Gui, Add, Text, x8 y475 w728 h20 , If you are planning to shop at Amazon, please use the link below to help support MergeKeys.
+Gui, Add, Picture, x8 y495 w728 h90 gRBMPSU, %A_WorkingDir%\amazon.gif
+
+
+;==========--
+Gui, Tab, DONATE
+Gui, Add, Text, x12 y60 w700 h1130 , If you are happy with the program and would like to see more features, ship me a few dollars.`n`nLOLNeverFold on Carbon`n`nAsleepAtTheWheel on RPM`n`nFor other options, shoot me an email at Support@RunBeterPoker.com or visit www.RunBetterPoker.com.`n`nIF YOU OR YOUR FRIENDS ARE LOOKING FOR RAKEBACK ON THE MERGE NETWORK COSIDER SIGNIN UP AT
+Gui, Add, Text, x12 y200 w700 h80 cBlue underline gRBMP,http://www.RunBetterPoker.com
+
+
+xxxxxx:=(a_Screenwidth/2)-370
+yyyyyy:=(a_screenheight/2)-300
+;Gui, Color, EEAA99
+gui, font,s10, helvetica
+Gui, Show, x%xxxxxx% y%yyyyyy% h600 w740, RunBetterPoker.com MergeKeys BETA %version%
+;==========--BELOW MAKES TRAY ICON RESTORE GUI
+Menu, Tray, Add, Restore, Restore
+Menu, Tray, default, Restore
+Menu, Tray, Click, 1
+
+lscount:=
+
+/*
+SplashTextOn ,200,150,Support the Project,`nNeed RakeBack?`n`nCHECK OUT THE DONATE TAB.
+Sleep,3000
+SplashTextOff
+*/
+;SetTimer,LobbyDis,-10
+
+if mmtoggle=1
+  ifExist, %A_ScriptDir%\RunBetterPoker.com MergeMods Beta.exe
+    Run, %A_ScriptDir%\RunBetterPoker.com MergeMods Beta.exe,,UserErrorLevel
+
+if  (frametoggle=1||amtoggle=1||bbtoggle=1)
+  SetTimer,FrameAuto,-10
+
+if tbtoggle=1
+  SetTimer, timebank,-10
+
+if actitoggle=1
+  settimer,autoact,-10
+  
+if abitoggle=1
+  SetTimer, autobi, -10
+
+if (actoggle=1||tregtoggle=1||sitoggle=1)
+  SetTimer, checkreg, -10
+
+;if wintoggle=1
+ ; SetTimer, winpop,-10  
+
+Return
+
+;;;;;;;;;;;;;;;;;;;;;;;;;SetTimer, GuiSus, 20
+RBMP:
+Run http://www.RunBetterPoker.com
+Return
+
+RBMPSU:
+Run http://www.amazon.com/?_encoding=UTF8&camp=1789&creative=390957&linkCode=ur2&tag=runb-20
+Return
+
+;------------------------------------SAVE
+Save:
+Gui, Submit,No Hide
+;FileDelete, %A_WorkingDir%\playersetup.ini
+GoSub, MakeIni
+Reload
+Return
+
+;-----------------------------------Cancel Changes
+Clear:
+Reload
+Return
+
+;-------------------------------------------------------------------ReadIni/SetHotkeys  SET LOOP # VARIABLES
+ReadIni:
+;--------------------------------------------  USER READ
+
+;GoSub, autosetup
+
+IniRead, username, %A_WorkingDir%\playersetup.ini, playerset, username
+if username=ERROR
+  {
+  MsgBox, MergeKeys has not been setup. Open Player Setup tab to complete setup.
+  username:=
+  }
+IniRead, client, %A_WorkingDir%\playersetup.ini, playerset, client
+if client=ERROR
+  client:=
+Iniread, fthick, %A_WorkingDir%\playersetup.ini, playerset, fthick
+if fthick=error
+  fthick:=5
+if fthick>7
+  fthick:=7
+if fthick<1
+  fthick:=1
+  IniRead, client, %A_WorkingDir%\playersetup.ini, playerset, client
+if client=ERROR
+  client:=
+
+Iniread, cascoff, %A_WorkingDir%\playersetup.ini, playerset, cascoff
+if cascoff=error
+  cascoff:=20
+if cascoff>150
+  cascoff:=150
+if cascoff<5
+  cascoff:=5
+
+lobby=%client% - %username% (Connected)
+lobbydc=%client% (Disconnected) - Not Logged In
+lobbyrc=%client% (Reconnecting) - Not Logged In
+login=%client% (Connected) - Not Logged In
+hh=%client% - Hand History
+conn=%client% (Connecting to Server...)
+load=%client% (Loading...)
+chat=%client% Chat
+WinGetClass, clientclass, %lobby%
+GroupAdd,excwin,%lobby%
+GroupAdd,excwin,%lobbydc%
+GroupAdd,excwin,%lobbyrc%
+GroupAdd,excwin,%hh%
+GroupAdd,excwin,%login%
+GroupAdd,excwin,%conn%
+GroupAdd,excwin,%load%
+GroupAdd,excwin,%chat%
+GroupAdd,excwin,ax`)
+GroupAdd,excwin,anded`)
+GroupAdd,excwin,player`)
+exclist=%lobby%,%lobbydc%,%lobbyrc%,%hh%,%login%,%conn%,%load%,%chat%,ax),anded),player)
+
+;-------------------------HOTKEY READ
+Loop,23
+  {
+  ;tooltip, %A_Index%
+  hk=hk%a_Index%
+  IniRead, hk, %A_WorkingDir%\playersetup.ini, hkeys, %hk%
+  hotkey%a_Index%=%hk%
+  Hotkey, IfWinActive, ahk_class SWT_Window0 
+  Hotkey, %hk%, hotkey%a_Index%,UseErrorLevel
+  }
+
+;---------------------------------------Mouse Buttons Read
+IniRead, xb1, %A_WorkingDir%\playersetup.ini, mousebuttons, xb1
+mselect=%xb1%
+buttonselect=Xbutton1
+GoSub, MBSElect
+  
+IniRead, xb2, %A_WorkingDir%\playersetup.ini, mousebuttons, xb2
+mselect=%xb2%
+buttonselect=Xbutton2
+GoSub, MBSElect
+
+IniRead, rb, %A_WorkingDir%\playersetup.ini, mousebuttons, rb
+mselect=%rb%
+buttonselect=RButton
+GoSub, MBSelect
+
+IniRead, mb, %A_WorkingDir%\playersetup.ini, mousebuttons, mb
+mselect=%mb%
+buttonselect=MButton
+GoSub, MBSelect
+
+IniRead, sp, %A_WorkingDir%\playersetup.ini, mousebuttons, sp
+mselect=%sp%
+buttonselect=space
+GoSub, MBSelect
+
+
+;--------------------------------------------MouseWheel
+
+
+Hotkey, IfWinActive, ahk_class SWT_Window0
+Hotkey, WheelUp, BetUp
+
+Hotkey, IfWinActive, ahk_class SWT_Window0
+Hotkey, WheelDown, BetDown
+
+Hotkey, IfWinActive, ahk_class SWT_Window0
+Hotkey, +LButton, SNGReg
+
+
+
+;--------------------------------------------Mini/Standard READ
+
+/*
+minimodeoff:=
+minimodeon:=
+IniRead, tablemode, %A_WorkingDir%\playersetup.ini, toggles, tablemode
+if tablemode=2
+  minimodeon=checked
+else
+  minimodeoff=checked
+*/
+
+;--------------------------------------------CHECK/CALL READ
+ccon:=
+ccoff:=
+IniRead, cctoggle, %A_WorkingDir%\playersetup.ini, toggles, cctoggle
+if cctoggle=1
+  ccon=checked
+else
+  ccoff=checked
+
+;--------------------------------------------AUTOFIRE READ
+afon:=
+afoff:=
+IniRead, aftoggle, %A_WorkingDir%\playersetup.ini, toggles, aftoggle
+if aftoggle=1
+  afon=checked
+else
+  afoff=checked
+
+;--------------------------------------------AUTOMOVE READ
+amon:=
+amoff:=
+IniRead, amtoggle, %A_WorkingDir%\playersetup.ini, toggles, amtoggle
+if amtoggle=1
+  amon=checked
+else
+  amoff=checked
+  
+;--------------------------------------------AUTO BET BOX READ
+bbon:=
+bboff:=
+IniRead, bbtoggle, %A_WorkingDir%\playersetup.ini, toggles, bbtoggle
+if bbtoggle=1
+  bbon=checked
+else
+  bboff=checked
+  
+;--------------------------------------------FRAME READ
+frameon:=
+frameoff:=
+IniRead, frametoggle, %A_WorkingDir%\playersetup.ini, toggles, frametoggle
+if frametoggle=1
+  frameon=checked
+else
+  frameoff=checked
+  
+;--------------------------------------------AutoCheckMessageBox
+acheckon:=
+acheckoff:=
+IniRead, actoggle, %A_WorkingDir%\playersetup.ini, toggles, actoggle
+if actoggle=1
+  acheckon=checked
+else
+  acheckoff=checked
+;--------------------------------------------SNG/TOURN REG WINDOWS
+tregon:=
+tregoff:=
+IniRead, tregtoggle, %A_WorkingDir%\playersetup.ini, toggles, tregtoggle
+if tregtoggle=1
+  tregon=checked
+else
+  tregoff=checked
+
+ ;-------------------------------------Run MergeMods
+mmon:=
+mmoff:=
+IniRead, mmtoggle, %A_WorkingDir%\playersetup.ini, toggles, mmtoggle
+if mmtoggle=1
+  mmon=checked
+else
+  mmoff=checked
+;--------------------------------------------AutoCheckMessageBox
+tbon:=
+tboff:=
+IniRead, tbtoggle, %A_WorkingDir%\playersetup.ini, toggles, tbtoggle
+if tbtoggle=1
+  tbon=checked
+else
+  tboff=checked
+  
+;--------------------------------------------AutoCheckMessageBox
+sion:=
+sioff:=
+IniRead, sitoggle, %A_WorkingDir%\playersetup.ini, toggles, sitoggle
+if sitoggle=1
+  sion=checked
+else
+  sioff=checked
+  ;------------------------------------------------------------------------------SMG pop ups
+;winon:=
+;winoff:=
+;IniRead, wintoggle, %A_WorkingDir%\playersetup.ini, toggles, wintoggle
+;if wintoggle=1
+ ; winon=checked
+;else
+ ; winoff=checked
+
+  
+;--------------------------------------------Activate window under cursor
+action:=
+actioff:=
+IniRead, actitoggle, %A_WorkingDir%\playersetup.ini, toggles, actitoggle
+if actitoggle=1
+  action=checked
+else
+  actioff=checked
+
+
+;--------------------------------------------Auto Buy in
+abion:=
+abioff:=
+IniRead, abitoggle, %A_WorkingDir%\playersetup.ini, toggles, abitoggle
+if abitoggle=1
+  abion=checked
+else
+  abioff=checked
+
+;--------------------------------------------Check free
+cfon:=
+cfoff:=
+IniRead, cftoggle, %A_WorkingDir%\playersetup.ini, toggles, cftoggle
+if cftoggle=1
+  cfon=checked
+else
+  cfoff=checked
+;--------------------------------------------Minimize to tray
+mintrayon:=
+mintrayoff:=
+IniRead, mintraytoggle, %A_WorkingDir%\playersetup.ini, toggles, mintraytoggle
+if mintraytoggle=1
+  mintrayon=checked
+else
+  mintrayoff=checked
+
+Return
+
+;----------------------------------------------------------------------------Choose correct mouse list option
+MBListSelect:
+lscount++
+if listselect%lscount%=1/2 Pot
+  Gui, Add, DropDownList, %lscoords% r9, None|1/2 Pot||2/3 Pot|3/4 Pot|Full Pot|All-in|Fold|Bet/Raise|Check|Call
+else
+if listselect%lscount%=2/3 Pot
+  Gui, Add, DropDownList, %lscoords% r9, None|1/2 Pot|2/3 Pot||3/4 Pot|Full Pot|All-in|Fold|Bet/Raise|Check|Call
+else
+if listselect%lscount%=3/4 Pot
+  Gui, Add, DropDownList, %lscoords% r9, None|1/2 Pot|2/3 Pot|3/4 Pot||Full Pot|All-in|Fold|Bet/Raise|Check|Call
+else
+if listselect%lscount%=Full Pot
+  Gui, Add, DropDownList, %lscoords% r9, None|1/2 Pot|2/3 Pot|3/4 Pot|Full Pot||All-in|Fold|Bet/Raise|Check|Call
+else
+if listselect%lscount%=All-in
+  Gui, Add, DropDownList, %lscoords% r9, None|1/2 Pot|2/3 Pot|3/4 Pot|Full Pot|All-in||Fold|Bet/Raise|Check|Call
+else
+if listselect%lscount%=Fold
+  Gui, Add, DropDownList, %lscoords% r9, None|1/2 Pot|2/3 Pot|3/4 Pot|Full Pot|All-in|Fold||Bet/Raise|Check|Call
+else
+if listselect%lscount%=Bet/Raise
+  Gui, Add, DropDownList, %lscoords% r9, None|1/2 Pot|2/3 Pot|3/4 Pot|Full Pot|All-in|Fold|Bet/Raise||Check|Call
+else
+if listselect%lscount%=Check
+  Gui, Add, DropDownList, %lscoords% r9, None|1/2 Pot|2/3 Pot|3/4 Pot|Full Pot|All-in|Fold|Bet/Raise|Check||Call|
+else
+if listselect%lscount%=Call
+  Gui, Add, DropDownList, %lscoords% r9, None|1/2 Pot|2/3 Pot|3/4 Pot|Full Pot|All-in|Fold|Bet/Raise|Check|Call||
+else
+  Gui, Add, DropDownList, %lscoords% r9, None||1/2 pot|2/3 Pot|3/4 Pot|Full Pot|All-in|Fold|Bet/Raise|Check|Call
+Return
+
+;---------------------------------------Mouse Button Assugnment   GET CORRECT HK ASSIGNMENTS
+MBSelect:
+if mselect=Full Pot
+  {
+  Hotkey, IfWinActive, ahk_class SWT_Window0
+  Hotkey, %buttonselect%, hotkey4
+  }
+else
+if mselect=3/4 pot
+  {
+  Hotkey, IfWinActive, ahk_class SWT_Window0
+  Hotkey, %buttonselect%, hotkey3
+  }
+else
+if mselect=2/3 pot
+  {
+  Hotkey, IfWinActive, ahk_class SWT_Window0
+  Hotkey, %buttonselect%, hotkey2
+  }
+else
+if mselect=1/2 pot
+  {
+  Hotkey, IfWinActive, ahk_class SWT_Window0
+  Hotkey, %buttonselect%, hotkey1
+  }
+else
+if mselect=All-in
+  {
+  Hotkey, IfWinActive, ahk_class SWT_Window0
+  Hotkey, %buttonselect%, hotkey5
+  }
+  else
+if mselect=Fold
+  {
+  Hotkey, IfWinActive, ahk_class SWT_Window0
+  Hotkey, %buttonselect%, hotkey9 ;--------took out ~
+  }
+else
+if mselect=Bet/Raise
+  {
+  Hotkey, IfWinActive, ahk_class SWT_Window0
+  Hotkey, %buttonselect%, hotkey6
+  }
+else
+if mselect=Check
+  {
+  Hotkey, IfWinActive,ahk_class SWT_Window0
+  Hotkey, %buttonselect%, hotkey7
+  }
+else
+if mselect=Call
+  {
+  Hotkey, IfWinActive, ahk_class SWT_Window0
+  Hotkey, %buttonselect%, hotkey8
+  }
+else
+  mselect=none
+Return
+
+;------------------------------------------------------------------SAVE SETTINGS----WRITE INI
+
+MakeIni:
+IniWrite, %username%, %A_WorkingDir%\playersetup.ini, playerset, username
+IniWrite, %client%, %A_WorkingDir%\playersetup.ini, playerset, client
+IniWrite, %fthick%, %A_WorkingDir%\playersetup.ini, playerset, fthick
+IniWrite, %cascoff%, %A_WorkingDir%\playersetup.ini, playerset, cascoff
+;----------------------------HOTKEYS
+Loop,23
+  IniWrite, % hotkey%A_Index%, %A_WorkingDir%\playersetup.ini, hkeys, hk%A_Index%
+
+;----------------------------MOUSE BUTTONS
+IniWrite, %rb%, %A_WorkingDir%\playersetup.ini, mousebuttons, rb
+IniWrite, %xb1%, %A_WorkingDir%\playersetup.ini, mousebuttons, xb1
+IniWrite, %xb2%, %A_WorkingDir%\playersetup.ini, mousebuttons, xb2
+IniWrite, %mb%, %A_WorkingDir%\playersetup.ini, mousebuttons, mb
+IniWrite, %sp%, %A_WorkingDir%\playersetup.ini, mousebuttons, sp
+;----------------------------TOGGLES
+IniWrite, %cctoggle%, %A_WorkingDir%\playersetup.ini, toggles, cctoggle
+IniWrite, %amtoggle%, %A_WorkingDir%\playersetup.ini, toggles, amtoggle
+IniWrite, %aftoggle%, %A_WorkingDir%\playersetup.ini, toggles, aftoggle
+IniWrite, %bbtoggle%, %A_WorkingDir%\playersetup.ini, toggles, bbtoggle
+IniWrite, %frametoggle%, %A_WorkingDir%\playersetup.ini, toggles, frametoggle
+IniWrite, %actoggle%, %A_WorkingDir%\playersetup.ini, toggles, actoggle
+IniWrite, %tregtoggle%, %A_WorkingDir%\playersetup.ini, toggles, tregtoggle
+IniWrite, %mmtoggle%, %A_WorkingDir%\playersetup.ini, toggles, mmtoggle
+IniWrite, %tbtoggle%, %A_WorkingDir%\playersetup.ini, toggles, tbtoggle
+IniWrite, %sitoggle%, %A_WorkingDir%\playersetup.ini, toggles, sitoggle
+;IniWrite, %wintoggle%, %A_WorkingDir%\playersetup.ini, toggles, wintoggle
+IniWrite, %actitoggle%, %A_WorkingDir%\playersetup.ini, toggles, actitoggle
+IniWrite, %abitoggle%, %A_WorkingDir%\playersetup.ini, toggles, abitoggle
+IniWrite, %cftoggle%, %A_WorkingDir%\playersetup.ini, toggles, cftoggle
+IniWrite, %mintraytoggle%, %A_WorkingDir%\playersetup.ini, toggles, mintraytoggle
+IniWrite, %tablemode%, %A_WorkingDir%\playersetup.ini, toggles, tablemode
+;IniWrite, %barcol%, %A_WorkingDir%\playersetup.ini, colscheme, custcol
+
+Return
+
+hotkey20:
+;tooltip,on
+WinWaitActive,ahk_class SWT_Window0
+HotKey20()
+;tooltip,off
+Return
+
+HotKey20(){
+global lobby
+global client
+
+;sleep,100
+WinWaitActive,ahk_class SWT_Window0
+if WinActive("ahk_class SWT_Window0")
+  {
+  WinGetActiveTitle, tables
+  WinSet Bottom,, %tables%
+  ;WinWaitNotActive,%tables%
+  sleep,50
+  WinActivate,ahk_class SWT_Window0,,%lobby%
+  Return
+  }
+}
+Return
+
+hotkey21:
+;tooltip,on
+WinWaitActive,ahk_class SWT_Window0
+HotKey21()
+;tooltip,off
+Return
+
+HotKey21(){
+global lobby
+global client
+;sleep,100
+WinWaitActive,ahk_class SWT_Window0
+sleep,50
+WinActivateBottom,ahk_class SWT_Window0 ,,%lobby%
+;sleep, 100
+}
+Return
+
+;----------------------------------------;MouseWheel BET UP
+
+Hotkey19:
+BetUp("0")
+Return
+
+BetUp:
+BetUp("-1")
+Return
+
+BetUp(key){
+global tablemode
+tablename:=TableCheck()
+if tablename!=-1
+  WheelAction(tablename, "WheelUp")
+else
+  if key=0
+    Send {Up}
+  else
+    Click WheelUp
+}
+Return
+
+
+;----------------------------------------;MouseWheel BET DOWN
+
+Hotkey18:
+BetDown("0")
+Return
+
+
+BetDown:
+BetDown("-1")
+Return
+
+BetDown(key){
+global tablemode
+tablename:=TableCheck()
+if tablename!=-1
+  WheelAction(tablename, "WheelDown")
+else
+  if key=0
+    Send {Down}
+  else
+    Click WheelDown
+}
+Return
+
+WheelAction(tablename, direction){
+WinGetPos,x,y,w,h,%tablename%
+MouseGetPos,mx,my
+cx:=.719136*w
+cy:=.957447*h
+;MsgBox, %cx%    %cy%
+BlockInput, MouseMove
+SetSystemCursor(A_ScriptDir "\misc\blank.cur")
+MouseMove,cx,cy
+sleep, 50
+MouseClick,%direction%, %cx%, %cy%
+MouseMove,mx,my
+RestoreSystemCursor()
+;ControlClick,x%cx% y%cy%,%tablename%,,%direction%,1,NA
+BlockInput, MouseMoveOff
+}
+Return
+;----------------------------------------
+#MaxThreadsPerHotkey 1                  ;------------------------------------------------MAXTHREADS                                                                   ;BET POT FUNCTIONS:																
+
+
+hotkey1: 	                                                        ;1/2 POT:
+aacheck++
+HotKey1()
+aacheck--
+Return
+
+HotKey1(){
+global aftoggle
+global tablemode
+tcx:=.338315
+tcy:=.929474
+tcx1:=.309278
+tcy1:=.921788
+tcx2:=.327586
+tcy2:=.934896
+tcx3:=.347926
+tcy3:=.938053
+tablename:=TableCheck()
+if tablename!=-1
+  {
+  worked:=PotBetCol(tcx,tcy,tcx1,tcy1,tcx2,tcy2,tcx3,tcy3,tablename)
+  sleep,100
+  if (worked=0 && aftoggle=1)
+    Hotkey6()
+  }
+}
+WaitMost()
+Return
+
+;----------------------------------------;2/3 POT
+hotkey2:
+aacheck++
+HotKey2()
+aacheck--
+Return
+
+HotKey2(){
+global aftoggle
+global tablemode
+tcx:=.372959
+tcy:=.929474
+tcx1:=.351240
+tcy1:=.930168
+tcx2:=.3659
+tcy2:=.932292
+tcx3:=.383253
+tcy3:=.938053
+tablename:=TableCheck()
+if tablename!=-1
+  {
+  worked:=PotBetCol(tcx,tcy,tcx1,tcy1,tcx2,tcy2,tcx3,tcy3,tablename)
+  if (worked=0 && aftoggle=1)
+    Hotkey6()
+  }
+}
+WaitMost()
+Return
+;----------------------------------------;3/4 POT
+hotkey3:
+aacheck++
+HotKey3()
+aacheck--
+Return
+
+HotKey3(){
+global aftoggle
+global tablemode
+tcx:=.411348
+tcy:=.929474
+tcx1:=.394628
+tcy1:=.922006
+tcx2:=.406130
+tcy2:=.932292
+tcx3:=.420290
+tcy3:=.938053
+tablename:=TableCheck()
+if tablename!=-1
+  {
+  worked:=PotBetCol(tcx,tcy,tcx1,tcy1,tcx2,tcy2,tcx3,tcy3,tablename)
+  if (worked=0 && aftoggle=1)
+    Hotkey6()
+  }
+}
+WaitMost()
+Return
+;----------------------------------------;FULL POT
+
+hotkey4:
+aacheck++
+HotKey4()
+aacheck--
+Return
+
+Hotkey4(){
+global aftoggle
+global tablemode
+tcx:=.455719
+tcy:=.930
+tcx1:=.446502
+tcy1:=.924791
+tcx2:=.452107
+tcy2:=.934896
+tcx3:=.460548
+tcy3:=.938053
+tablename:=TableCheck()
+if tablename!=-1
+  {
+  worked:=PotBetCol(tcx,tcy,tcx1,tcy1,tcx2,tcy2,tcx3,tcy3,tablename)
+  if (worked=0 && aftoggle=1)
+    Hotkey6()
+  }
+}
+WaitMost()
+Return
+;----------------------------------------;All in
+
+Hotkey5:
+aacheck++
+HotKey5()
+aacheck--
+Return
+
+HotKey5(){
+global tablemode
+lx1:=.720478
+lx2:=lx1+1
+lx3:=.567376
+lx4:=lx3+1
+color=0x0000DB        ;0x0000C9
+BetCheckRaiseFold(lx1,lx2,lx3,lx4,color,0)
+WaitMost()
+}
+Return
+
+;----------------------------------------Bet/Raise
+
+Hotkey6:
+HotKey6()
+Return
+
+HotKey6(){
+global tablemode
+lx1:=.602878
+lx2:=lx1+1
+lx3:=.567376
+lx4:=lx3+1
+color=0x0060D2
+BetCheckRaiseFold(lx1,lx2,lx3,lx4,color,0)
+WaitMost()
+}
+Return
+
+;----------------------------------------Check
+hotkey7:
+;msgbox, hk
+aacheck++
+HotKey7(cctoggle)
+aacheck--
+Return
+
+HotKey7(cctoggle){
+global tablemode
+lx1:=.485294
+lx2:=lx1+1
+lx3:=.394255
+lx4:=lx3+1
+color=0x009071
+color2=0x0080AB
+both:=BetCheckRaiseFold(lx1,lx2,lx3,lx4,color,0)
+if (both!=0 && cctoggle=1)
+  BetCheckRaiseFold(lx1,lx2,lx3,lx4,color2,0)
+WaitMost()
+}
+Return
+
+;----------------------------------------Call
+Hotkey8:
+;msgbox hk*
+aacheck++
+HotKey8(cctoggle)
+aacheck--
+Return
+
+HotKey8(cctoggle){
+global tablemode
+lx1:=.485294
+lx2:=lx1+1
+lx3:=.394255
+lx4:=lx3+1
+color=0x0080AB
+color2=0x009071
+both:=BetCheckRaiseFold(lx1,lx2,lx3,lx4,color,0)
+if (both!=0 && cctoggle=1)
+  BetCheckRaiseFold(lx1,lx2,lx3,lx4,color2,0)WaitMost()
+}
+Return
+
+
+;----------------------------------------FOLD
+hotkey9:
+HotKey9()
+Return
+
+HotKey9(){
+global tablemode
+lx1:=.363324
+lx2:=lx1+1
+lx3:=.241135
+lx4:=lx3+1
+color=0x7D7D00  ;0x727218  ;0x767600 second
+pass:=BetCheckRaiseFold(lx1,lx2,lx3,lx4,color,0)
+if pass!=0
+  RadioButton()
+WaitMost()
+}
+Return
+
+RadioButton(){
+WinGetActivestats,tablename,widtha,heighta,widtha,heighta
+WinGet,proc,ProcessName,A
+if tablename contains 0`),9`),8`),7`),6`),5`),4`),3`),2`),1`),`#
+  if proc=client.exe
+    {
+	cx1:=.308951*widtha
+    cy1:=.876316*heighta
+    cx2:=.366105*widtha
+    cy2:=.915789*heighta
+    PixelSearch, ovx, ovy, cx1, cy1, cx2, cy2, 0xFFFFC0, 20,fast
+    ;MouseMove,cx1,cy1
+	;sleep 1500
+	;MouseMove,cx2,cy2
+    if ErrorLevel=0
+      {
+      ControlClick,x%ovx% y%ovy%,%tablename%,,l,1,NA
+	  Return %ErrorLevel%
+	  }
+	else
+	  {
+	  cx1:=.215377*widtha
+      cy1:=.8468347*heighta
+      cx2:=.283644*widtha
+      cy2:=.893557*heighta
+	  PixelSearch, ovx, ovy, cx1, cy1, cx2, cy2, 0xFFE19F, 25,fast
+      if ErrorLevel=0
+        {
+        ControlClick,x%ovx% y%ovy%,%tablename%,,l,1,NA
+		Return %ErrorLevel%
+	    }
+	  }
+	;sleep,2000
+    ;MouseMove,cx2,cy2
+	}
+Return -1
+}
+Return
+
+Hotkey17: ;<-------------------------------------------Draw/Stand Pat
+DrawStand:
+Return
+
+;----------------------------------------                                   ;Bet Amount Box
+hotkey10:
+;TBOn()
+aacheck++
+HotKey10()
+aacheck--
+Return
+
+HotKey10(){
+global tablemode
+global barcol
+tablename:=TableCheck()
+if tablename!=-1
+  {
+  WinGetPos,bbx,bby,widtha,heighta,%tablename%
+  cx1:=.653810*widtha
+  cy1:=.928947*heighta
+  cx2:=.77*widtha
+  cy2:=.96316*heighta
+  PixelSearch, ovx, ovy, cx1, cy1, cx2, cy2, 0x212121, 1,fast
+  if ErrorLevel=0
+    ControlClick,x%ovx% y%ovy%,%tablename%,,l,1,NA
+  }
+}
+Return
+
+;-------------------------------------------------------------------SUSPEND
+Hotkey11:
+Suspend
+Return
+
+;----------------------------------------;AUTO ARRANGE TABLES HK12
+Hotkey12:
+SetTitleMatchMode,3
+run+=1
+checkcount=
+If run>1
+Loop,18            ;CHANGE TO LOOP, COUNT?
+  {
+  tablecheck:=table%a_Index%
+  IfWinExist, %tablecheck%
+    WinRestore, %tablecheck%
+  ;MsgBox, %checkcount% %tablecheck%
+  if (tablecheck!=0&&!WinExist(tablecheck))
+    {
+	;MsgBox, %tablecheck%
+    table%a_Index%=0
+    count-=1
+    }
+  }
+
+;;;;Adds tables TM
+setTitleMatchMode,2
+WinGet, id, list,ahk_class SWT_Window0,,
+Loop, %id%
+  {
+  table := id%A_Index%
+  WinGetTitle, title, ahk_id %table%
+  ;MsgBox, %title%
+  If(title!=lobby && title!=hh && title!=login && title!=lobbydc && title!=lobbyrc && title!=table1 && title!=table2 && title!=table3 && title!=table4 && title!=table5 && title!=table6 && title!=table7 && title!=table8 && title!=table9 && title!=table10 && title!=table11 && title!=table12 && title!=table13 && title!=table14 && title!=table15 && title!=table16 && title!=table17 && title!=table18)
+    {
+	Loop
+	  if table%a_Index%=0
+	    {
+        table%a_Index%=%title%
+	    count++
+		Break
+	    }
+      else if a_Index>18
+	    {
+	    MsgBox, Maximum 18 tables supported.
+	    Break
+	    }  
+    }	  
+  }
+  
+;MsgBox, %count%
+;MsgBox, %table1%`n%table2%`n%table3%
+
+;MsgBox, Out
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;REASSIGN TABLES
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;REASSIGN TABLES
+curr:=1
+next:=2
+loop,17
+{
+if table1=0
+  {
+  table1=%table2%
+  table2=0
+  }
+if table2=0
+  {
+  table2=%table3%
+  table3=0 
+  }
+if table3=0
+  {
+  table3=%table4%
+  table4=0
+  }
+if table4=0
+  {
+  table4=%table5%
+  table5=0
+  }
+if table5=0
+  {
+  table5=%table6%
+  table6=0
+  }
+if table6=0
+  {
+  table6=%table7%
+  table7=0
+  }
+if table7=0
+  {
+  table7=%table8%
+  table8=0
+  }
+if table8=0
+  {
+  table8=%table9%
+  table9=0
+  }
+if table9=0
+  {
+  table9=%table10%
+  table10=0
+  }
+if table10=0
+  {
+  table10=%table11%
+  table11=0
+  }
+if table11=0
+  {
+  table11=%table12%
+  table12=0
+  }
+if table12=0
+  {
+  table12=%table13%
+  table13=0
+  }
+if table13=0
+  {
+  table13=%table14%
+  table14=0
+  }
+if table14=0
+  {
+  table14=%table15%
+  table15=0
+  }
+if table15=0
+  {
+  table15=%table16%
+  table16=0
+  }
+if table16=0
+  {
+  table16=%table17%
+  table17=0
+  }
+if table17=0
+  {
+  table17=%table18%
+  table18=0
+  }
+}
+
+readcount=
+if count<3
+  layout=2
+else if count<5
+  layout=4
+else if count<7
+  layout=6
+else if count<9
+  layout=8
+else if count<11
+  layput=10
+else if count<13
+  layout=12
+else if count<15
+  layout=14
+else if count<17
+  layout=16
+else
+  layout=18
+
+;MsgBox, %layout%
+  
+Loop, %count%
+  {
+  IniRead, x%A_index%, %A_WorkingDir%\playersetup.ini, %layout%layout, x%a_Index%
+  IniRead, y%A_index%, %A_WorkingDir%\playersetup.ini, %layout%layout, y%a_Index%
+  IniRead, w%A_index%, %A_WorkingDir%\playersetup.ini, %layout%layout, w%a_Index%
+  IniRead, h%A_index%, %A_WorkingDir%\playersetup.ini, %layout%layout, h%a_Index%
+  WinMove, % table%A_Index%,,x%A_Index%,y%A_Index%,w%A_Index%,h%A_Index%
+  WinActivate, % table%A_Index%
+  }
+	;;;;;;;;;;;;;;;;;MOVE TABLES
+Loop,%count%
+  {
+  tableact:=table%A_Index%
+  WinActivate,%tableact%
+  }
+  
+if username=LOLNeverFold
+{
+Winmove %lobby%,,-839, 561                  ;LOBBY ETC MOVE TO LAPTOP
+WinMove %hh%,, -1046,455
+}
+;MsgBox, %count%,Table1, %Table1%, Table2, %Table2% , Table3, %Table3%, Table4, %Table4%, Table5, %Table5%, Table6, %Table6%, Table7, %Table7%, Table8, %Table8%, Table9, %Table9%
+;MsgBox, Table1a, %Table1a%, Table2a, %Table2a% , Table3a, %Table3a%, Table4a, %Table4a%, Table5a, %Table5a%, Table6a, %Table6a%, Table7a, %Table7a%, Table8a, %Table8a%, Table9a, %Table9a%
+Return
+
+;----------------------------------------Stack Tables HK13
+hotkey13:
+StackTables()
+Return
+
+StackTables(){
+global client, lobby, hh, login, lobbydc, lobbyrc
+setTitleMatchMode,2
+WinGetActiveStats, titlec,widthc,heightc,xc,yc
+WinGet, id, list,ahk_class SWT_Window0,,
+Loop, %id%
+  {
+  table := id%A_Index%
+  WinGetTitle, title, ahk_id %table%
+  WinGet,proc,ProcessName,ahk_id %table%
+  if title contains 0`),9`),8`),7`),6`),5`),4`),3`),2`),1`),`#
+  if proc=client.exe
+    WinMove, %title%,,xc,yc,widthc,heightc
+  }
+}  
+WaitMost()
+Return
+;----------------------------------------TABLE LIST  HK14
+hotkey14:
+MsgBox,262144,,TABLE COUNT: %count%`n`nACTIVE TABLES:`n`nTable 1: %table1%`n`nTable 2: %table2%`n`nTable 3: %table3%`n`nTable 4: %table4%`n`nTable 5: %table5%`n`nTable 6: %table6%`n`nTable 7: %table7%`n`nTable 8: %table8%`n`nTable 9: %table9%`n`nTable 10: %table10%`n`nTable 11: %table11%`n`nTable 12: %table12%`n`nTable 13: %table13%`n`nTable 13: %table13%`n`nTable 14: %table14%`n`nTable 15: %table15%`n`nTable 16: %table16%`n`nTable 13: %table13%
+WaitMost()
+Return
+
+;----------------------------------------;TABLEPURGE HK15
+hotkey15:                        
+tablecounter=0
+loop,18
+  table%a_index%=0
+count:=0
+run:=0
+WaitMost() 
+Return
+
+;----------------------------------------;Lobby to front HK 16
+Hotkey16:
+if lobtoggle=1
+  {
+  WinMinimize, %lobby%
+  lobtoggle=0
+  }
+else
+  {
+  WinActivate, %lobby%
+  lobtoggle=1
+  }
+WaitMost()
+Return
+
+;----------------------------------------TABLE REASSIGNMENTS
+; ^1::
+; tableset:=
+; tableholder:=0
+; SetTitleMatchMode, 2
+; WinGetActiveTitle,tableset     ;,tableset,xab,yab,xabc,yabc                                    ;change
+; ifWinActive, %client%
+; If (tableset!=table1 && tableset!=lobby && tableset!=login && tableset!=hh &&tableset!=lobbydc)
+  ; {
+  ; GoSub, TableReassign
+  ; if table1!=0
+    ; Gosub, TableReassign
+  
+  ; }
+; Return
+
+; TableChecker:
+; tscount:=
+; Loop,12
+  ; {
+  ; tscount++
+  ; MsgBox, %tscount%
+  ; if tableset:=table%tscount%
+    ; {
+    ; table%tscount%=0
+    ; MsgBox, %tableset%
+    ; Return
+    ; }
+  ; }
+; count+=1
+; Return
+
+; TableReassign:
+; Loop,12
+/*  
+c::
+test1 = hi
+test2 = hello
+test3 = how are you
+Loop,3
+  MsgBox % test%A_Index%
+Return
+*/
+
+tablereassign:                                                         ;REASSIGN TABLE test
+tableset:=
+tableholder:=
+WinGetActiveTitle tableset
+Loop
+{
+InputBox, assignt, Table reassignment,  Move %tableset% to spot `#(1-18)
+if(assignt>0&&assignt<19&&tableset)
+  Break
+else if ErrorLevel
+  return
+}
+MsgBox, %assignt%
+SetTitleMatchMode, 2
+WinGetActiveTitle,tableset 
+WinGet,proc,ProcessName,%tableset%
+Msgbox, % table%assignt%
+if tableset contains 0`),9`),8`),7`),6`),5`),4`),3`),2`),1`),`#
+If(tableset!=table%assignt% && proc="client.exe")
+{
+MsgBox, in
+if tableset=%table1%
+table1=0
+else
+if tableset=%table2%
+table2=0
+else
+if tableset=%table3%
+table3=0
+else
+if tableset=%table4%
+table4=0
+else
+if tableset=%table5%
+table5=0
+else
+if tableset=%table6%
+table6=0
+else
+if tableset=%table7%
+table7=0
+else
+if tableset=%table8%
+table8=0
+else
+if tableset=%table9%
+table9=0
+else
+if tableset=%table10%
+table10=0
+else
+if tableset=%table11%
+table11=0
+else
+if tableset=%table12%
+table12=0
+else
+if tableset=%table13%
+table13=0
+else
+if tableset=%table14%
+table14=0
+else
+if tableset=%table15%
+table15=0
+else
+if tableset=%table16%
+table16=0
+else
+if tableset=%table17%
+table17=0
+else
+if tableset=%table18%
+table18=0
+else
+count+=1
+if table%assignt%!=0
+tableholder = % table%assignt%
+table%assignt% = %tableset%
+;MsgBox, Tableholder, %tableholder%
+if tableholder!=0
+{
+;MsgBox, Pass3
+if table1=0
+table1=%tableholder%
+else
+if table2=0
+table2=%tableholder%
+else
+if table3=0
+table3=%tableholder%
+else
+if table4=0
+table4=%tableholder%
+else
+if table5=0
+table5=%tableholder%
+else
+if table6=0
+table6=%tableholder%
+else
+if table7=0
+table7=%tableholder%
+else
+if table8=0
+table8=%tableholder%
+else
+if table9=0
+table9=%tableholder%
+else
+if table10=0
+table10=%tableholder%
+else
+if table11=0
+table11=%tableholder%
+else
+if table12=0
+table12=%tableholder%
+else
+if table13=0
+table13=%tableholder%
+else
+if table14=0
+table14=%tableholder%
+else
+if table15=0
+table15=%tableholder%
+else
+if table16=0
+table16=%tableholder%
+else
+if table17=0
+table17=%tableholder%
+else
+if table18=0
+table18=%tableholder%
+else
+  {
+  MsgBox,262144,,TOO MANY TABLES.....OVERFLOW.....table left unassigned: %tableholder%
+  count-=1
+  }
+}
+}
+GoSub, hotkey12
+tableset:=
+tableholder:=
+;Msgbox, Table 1: %table1% Table: %table2a% TABLECOUNTER: %count%
+Return
+  
+  
+  
+  
+^1::                                                         ;REASSIGN TABLE 1
+tableset:=
+tableholder:=
+SetTitleMatchMode, 2
+WinGetActiveTitle,tableset     ;,tableset,xab,yab,xabc,yabc                                    ;change
+WinGet,proc,ProcessName,%tableset%    ;,tableset,xab,yab,xabc,yabc                                    ;change
+if tableset not in %exclist%
+If (tableset!=table1 && proc="client.exe")
+{
+if tableset=%table1%
+table1=0
+else
+if tableset=%table2%
+table2=0
+else
+if tableset=%table3%
+table3=0
+else
+if tableset=%table4%
+table4=0
+else
+if tableset=%table5%
+table5=0
+else
+if tableset=%table6%
+table6=0
+else
+if tableset=%table7%
+table7=0
+else
+if tableset=%table8%
+table8=0
+else
+if tableset=%table9%
+table9=0
+else
+if tableset=%table10%
+table10=0
+else
+if tableset=%table11%
+table11=0
+else
+if tableset=%table12%
+table12=0
+else
+count+=1
+if table1!=0
+tableholder=%table1%
+table1=%tableset%
+;MsgBox, Tableholder, %tableholder%
+if tableholder!=0
+{
+;MsgBox, Pass3
+if table1=0
+table1=%tableholder%
+else
+if table2=0
+table2=%tableholder%
+else
+if table3=0
+table3=%tableholder%
+else
+if table4=0
+table4=%tableholder%
+else
+if table5=0
+table5=%tableholder%
+else
+if table6=0
+table6=%tableholder%
+else
+if table7=0
+table7=%tableholder%
+else
+if table8=0
+table8=%tableholder%
+else
+if table9=0
+table9=%tableholder%
+else
+if table10=0
+table10=%tableholder%
+else
+if table11=0
+table11=%tableholder%
+else
+if table12=0
+table12=%tableholder%
+else
+{
+MsgBox,262144,,TOO MANY TABLES.....OVERFLOW.....table left unassigned: %tableholder%
+count-=1
+}
+}
+}
+tableset:=
+tableholder:=
+;Msgbox, Table 1: %table1% Table: %table2a% TABLECOUNTER: %count%
+Return
+
+
+;---------------------------------------
+^2::                                                         ;REASSIGN TABLE 2
+tableset:=
+tableholder:=
+SetTitleMatchMode, 2
+WinGetActiveTitle,tableset     ;,tableset,xab,yab,xabc,yabc                                    ;change
+WinGet,proc,ProcessName,%tableset%
+if tableset not in %exclist%
+If (tableset!=table2 && proc="client.exe")
+{
+if tableset=%table1%
+table1=0
+else
+if tableset=%table2%
+table2=0
+else
+if tableset=%table3%
+table3=0
+else
+if tableset=%table4%
+table4=0
+else
+if tableset=%table5%
+table5=0
+else
+if tableset=%table6%
+table6=0
+else
+if tableset=%table7%
+table7=0
+else
+if tableset=%table8%
+table8=0
+else
+if tableset=%table9%
+table9=0
+else
+if tableset=%table10%
+table10=0
+else
+if tableset=%table11%
+table11=0
+else
+if tableset=%table12%
+table12=0
+else
+count+=1
+if table2!=0                               ;change
+tableholder=%table2%
+table2=%tableset%                          ;change
+;MsgBox, Tableholder, %tableholder%       
+
+if tableholder!=0
+{
+;MsgBox, Pass3
+if table1=0
+table1=%tableholder%
+else
+if table2=0
+table2=%tableholder%
+else
+if table3=0
+table3=%tableholder%
+else
+if table4=0
+table4=%tableholder%
+else
+if table5=0
+table5=%tableholder%
+else
+if table6=0
+table6=%tableholder%
+else
+if table7=0
+table7=%tableholder%
+else
+if table8=0
+table8=%tableholder%
+else
+if table9=0
+table9=%tableholder%
+else
+if table10=0
+table10=%tableholder%
+else
+if table11=0
+table11=%tableholder%
+else
+if table12=0
+table12=%tableholder%
+else
+{
+MsgBox,262144,, TOO MANY TABLES.....OVERFLOW.....table left unassigned: %tableholder%
+count-=1
+}
+}
+}
+tableset:=
+tableholder:=
+;Msgbox, Table 1: %table1% Table: %table2a% TABLECOUNTER: %count%
+Return
+
+
+^3::                                                         ;REASSIGN TABLE 3
+tableset:=
+tableholder:=
+SetTitleMatchMode, 2
+WinGet,proc,ProcessName,A
+WinGetActiveTitle,tableset     ;,tableset,xab,yab,xabc,yabc                                ;change
+if tableset not in %exclist%
+If (tableset!=table3 && proc="client.exe")
+{
+if tableset=%table1%
+table1=0
+else
+if tableset=%table2%
+table2=0
+else
+if tableset=%table3%
+table3=0
+else
+if tableset=%table4%
+table4=0
+else
+if tableset=%table5%
+table5=0
+else
+if tableset=%table6%
+table6=0
+else
+if tableset=%table7%
+table7=0
+else
+if tableset=%table8%
+table8=0
+else
+if tableset=%table9%
+table9=0
+else
+if tableset=%table10%
+table10=0
+else
+if tableset=%table11%
+table11=0
+else
+if tableset=%table12%
+table12=0
+else
+count+=1
+if table3!=0                               ;change
+tableholder=%table3%                       ;change
+table3=%tableset%                          ;change
+;MsgBox, Tableholder, %tableholder%       
+
+if tableholder!=0
+{
+;MsgBox, Pass3
+if table1=0
+table1=%tableholder%
+else
+if table2=0
+table2=%tableholder%
+else
+if table3=0
+table3=%tableholder%
+else
+if table4=0
+table4=%tableholder%
+else
+if table5=0
+table5=%tableholder%
+else
+if table6=0
+table6=%tableholder%
+else
+if table7=0
+table7=%tableholder%
+else
+if table8=0
+table8=%tableholder%
+else
+if table9=0
+table9=%tableholder%
+else
+if table10=0
+table10=%tableholder%
+else
+if table11=0
+table11=%tableholder%
+else
+if table12=0
+table12=%tableholder%
+else
+{
+MsgBox,262144,,TOO MANY TABLES.....OVERFLOW.....table left unassigned: %tableholder%
+count-=1
+}
+}
+}
+tableset:=
+tableholder:=
+;Msgbox, Table 1: %table1% Table: %table2a% TABLECOUNTER: %count%
+Return
+
+
+;----------------------------------------
+
+^4::                                                         ;REASSIGN TABLE 4                                     ;REASSIGN TABLE 2
+tableset:=
+tableholder:=
+SetTitleMatchMode, 2
+WinGet,proc,ProcessName,A
+WinGetActiveTitle,tableset     ;,tableset,xab,yab,xabc,yabc                                    ;change
+if tableset not in %exclist%
+If (tableset!=table4 && proc="client.exe")
+{
+if tableset=%table1%
+table1=0
+else
+if tableset=%table2%
+table2=0
+else
+if tableset=%table3%
+table3=0
+else
+if tableset=%table4%
+table4=0
+else
+if tableset=%table5%
+table5=0
+else
+if tableset=%table6%
+table6=0
+else
+if tableset=%table7%
+table7=0
+else
+if tableset=%table8%
+table8=0
+else
+if tableset=%table9%
+table9=0
+else
+if tableset=%table10%
+table10=0
+else
+if tableset=%table11%
+table11=0
+else
+if tableset=%table12%
+table12=0
+else
+count+=1
+if table4!=0                               ;change
+tableholder=%table4%                       ;change
+table4=%tableset%                          ;change
+;MsgBox, Tableholder, %tableholder%       
+
+if tableholder!=0
+{
+;MsgBox, Pass3
+if table1=0
+table1=%tableholder%
+else
+if table2=0
+table2=%tableholder%
+else
+if table3=0
+table3=%tableholder%
+else
+if table4=0
+table4=%tableholder%
+else
+if table5=0
+table5=%tableholder%
+else
+if table6=0
+table6=%tableholder%
+else
+if table7=0
+table7=%tableholder%
+else
+if table8=0
+table8=%tableholder%
+else
+if table9=0
+table9=%tableholder%
+else
+if table10=0
+table10=%tableholder%
+else
+if table11=0
+table11=%tableholder%
+else
+if table12=0
+table12=%tableholder%
+else
+{
+MsgBox,262144,,TOO MANY TABLES.....OVERFLOW.....table left unassigned: %tableholder%
+count-=1
+}
+}
+}
+tableset:=
+tableholder:=
+;Msgbox, Table 1: %table1% Table: %table2a% TABLECOUNTER: %count%
+Return
+
+
+
+;----------------------------------------
+
+^5::                                                         ;REASSIGN TABLE 5
+tableset:=
+tableholder:=
+SetTitleMatchMode, 2
+WinGet,proc,ProcessName,A
+WinGetActiveTitle,tableset     ;,tableset,xab,yab,xabc,yabc                                    ;change
+if tableset not in %exclist%
+If (tableset!=table5 && proc="client.exe")
+{
+if tableset=%table1%
+table1=0
+else
+if tableset=%table2%
+table2=0
+else
+if tableset=%table3%
+table3=0
+else
+if tableset=%table4%
+table4=0
+else
+if tableset=%table5%
+table5=0
+else
+if tableset=%table6%
+table6=0
+else
+if tableset=%table7%
+table7=0
+else
+if tableset=%table8%
+table8=0
+else
+if tableset=%table9%
+table9=0
+else
+if tableset=%table10%
+table10=0
+else
+if tableset=%table11%
+table11=0
+else
+if tableset=%table12%
+table12=0
+else
+count+=1
+if table5!=0                               ;change
+tableholder=%table5%
+table5=%tableset%                          ;change
+;MsgBox, Tableholder, %tableholder%       
+
+if tableholder!=0
+{
+;MsgBox, Pass3
+if table1=0
+table1=%tableholder%
+else
+if table2=0
+table2=%tableholder%
+else
+if table3=0
+table3=%tableholder%
+else
+if table4=0
+table4=%tableholder%
+else
+if table5=0
+table5=%tableholder%
+else
+if table6=0
+table6=%tableholder%
+else
+if table7=0
+table7=%tableholder%
+else
+if table8=0
+table8=%tableholder%
+else
+if table9=0
+table9=%tableholder%
+else
+if table10=0
+table10=%tableholder%
+else
+if table11=0
+table11=%tableholder%
+else
+if table12=0
+table12=%tableholder%
+else
+{
+MsgBox,262144,,TOO MANY TABLES.....OVERFLOW.....table left unassigned: %tableholder%
+count-=1
+}
+}
+}
+tableset:=
+tableholder:=
+;Msgbox, Table 1: %table1% Table: %table2a% TABLECOUNTER: %count%
+Return
+;----------------------------------------
+
+^6::                                                         ;REASSIGN TABLE 6
+tableset:=
+tableholder:=
+SetTitleMatchMode, 2
+WinGet,proc,ProcessName,A
+WinGetActiveTitle,tableset     ;,tableset,xab,yab,xabc,yabc                                    ;change
+if tableset not in %exclist%
+If (tableset!=table6 && proc="client.exe")
+{
+if tableset=%table1%
+table1=0
+else
+if tableset=%table2%
+table2=0
+else
+if tableset=%table3%
+table3=0
+else
+if tableset=%table4%
+table4=0
+else
+if tableset=%table5%
+table5=0
+else
+if tableset=%table6%
+table6=0
+else
+if tableset=%table7%
+table7=0
+else
+if tableset=%table8%
+table8=0
+else
+if tableset=%table9%
+table9=0
+else
+if tableset=%table10%
+table10=0
+else
+if tableset=%table11%
+table11=0
+else
+if tableset=%table12%
+table12=0
+else
+count+=1
+if table6!=0                               ;change
+tableholder=%table6%
+table6=%tableset%                          ;change
+;MsgBox, Tableholder, %tableholder%       
+
+if tableholder!=0
+{
+;MsgBox, Pass3
+if table1=0
+table1=%tableholder%
+else
+if table2=0
+table2=%tableholder%
+else
+if table3=0
+table3=%tableholder%
+else
+if table4=0
+table4=%tableholder%
+else
+if table5=0
+table5=%tableholder%
+else
+if table6=0
+table6=%tableholder%
+else
+if table7=0
+table7=%tableholder%
+else
+if table8=0
+table8=%tableholder%
+else
+if table9=0
+table9=%tableholder%
+else
+if table10=0
+table10=%tableholder%
+else
+if table11=0
+table11=%tableholder%
+else
+if table12=0
+table12=%tableholder%
+else
+{
+MsgBox,262144,,TOO MANY TABLES.....OVERFLOW.....table left unassigned: %tableholder%
+count-=1
+}
+}
+}
+tableset:=
+tableholder:=
+;Msgbox, Table 1: %table1% Table: %table2a% TABLECOUNTER: %count%
+Return
+;----------------------------------------
+
+^7::                                                         ;REASSIGN TABLE 7
+tableset:=
+tableholder:=
+SetTitleMatchMode, 2
+WinGet,proc,ProcessName,A
+WinGetActiveTitle,tableset     ;,tableset,xab,yab,xabc,yabc                                    ;change
+if tableset not in %exclist%
+If (tableset!=table7 && proc="client.exe")
+{
+if tableset=%table1%
+table1=0
+else
+if tableset=%table2%
+table2=0
+else
+if tableset=%table3%
+table3=0
+else
+if tableset=%table4%
+table4=0
+else
+if tableset=%table5%
+table5=0
+else
+if tableset=%table6%
+table6=0
+else
+if tableset=%table7%
+table7=0
+else
+if tableset=%table8%
+table8=0
+else
+if tableset=%table9%
+table9=0
+else
+if tableset=%table10%
+table10=0
+else
+if tableset=%table11%
+table11=0
+else
+if tableset=%table12%
+table12=0
+else
+count+=1
+if table7!=0                               ;change
+tableholder=%table7%
+table7=%tableset%                          ;change
+;MsgBox, Tableholder, %tableholder%       
+
+if tableholder!=0
+{
+;MsgBox, Pass3
+if table1=0
+table1=%tableholder%
+else
+if table2=0
+table2=%tableholder%
+else
+if table3=0
+table3=%tableholder%
+else
+if table4=0
+table4=%tableholder%
+else
+if table5=0
+table5=%tableholder%
+else
+if table6=0
+table6=%tableholder%
+else
+if table7=0
+table7=%tableholder%
+else
+if table8=0
+table8=%tableholder%
+else
+if table9=0
+table9=%tableholder%
+else
+if table10=0
+table10=%tableholder%
+else
+if table11=0
+table11=%tableholder%
+else
+if table12=0
+table12=%tableholder%
+else
+{
+MsgBox,262144,,TOO MANY TABLES.....OVERFLOW.....table left unassigned: %tableholder%
+count-=1
+}
+}
+}
+tableset:=
+tableholder:=
+;Msgbox, Table 1: %table1% Table: %table2a% TABLECOUNTER: %count%
+Return
+
+;----------------------------------------
+
+^8::                                                         ;REASSIGN TABLE 8
+tableset:=
+tableholder:=
+SetTitleMatchMode, 2
+WinGet,proc,ProcessName,A
+WinGetActiveTitle,tableset     ;,tableset,xab,yab,xabc,yabc                                    ;change
+if tableset not in %exclist%
+If (tableset!=table8 && proc="client.exe")
+{
+if tableset=%table1%
+table1=0
+else
+if tableset=%table2%
+table2=0
+else
+if tableset=%table3%
+table3=0
+else
+if tableset=%table4%
+table4=0
+else
+if tableset=%table5%
+table5=0
+else
+if tableset=%table6%
+table6=0
+else
+if tableset=%table7%
+table7=0
+else
+if tableset=%table8%
+table8=0
+else
+if tableset=%table9%
+table9=0
+else
+if tableset=%table10%
+table10=0
+else
+if tableset=%table11%
+table11=0
+else
+if tableset=%table12%
+table12=0
+else
+count+=1
+if table8!=0                               ;change
+tableholder=%table8%
+table8=%tableset%                          ;change
+;MsgBox, Tableholder, %tableholder%       
+
+if tableholder!=0
+{
+;MsgBox, Pass3
+if table1=0
+table1=%tableholder%
+else
+if table2=0
+table2=%tableholder%
+else
+if table3=0
+table3=%tableholder%
+else
+if table4=0
+table4=%tableholder%
+else
+if table5=0
+table5=%tableholder%
+else
+if table6=0
+table6=%tableholder%
+else
+if table7=0
+table7=%tableholder%
+else
+if table8=0
+table8=%tableholder%
+else
+if table9=0
+table9=%tableholder%
+else
+if table10=0
+table10=%tableholder%
+else
+if table11=0
+table11=%tableholder%
+else
+if table12=0
+table12=%tableholder%
+else
+{
+MsgBox,262144,,TOO MANY TABLES.....OVERFLOW.....table left unassigned: %tableholder%
+count-=1
+}
+}
+}
+tableset:=
+tableholder:=
+;Msgbox, Table 1: %table1% Table: %table2a% TABLECOUNTER: %count%
+Return
+
+;----------------------------------------
+
+^9::                                                         ;REASSIGN TABLE 9
+tableset:=
+tableholder:=
+SetTitleMatchMode, 2
+WinGet,proc,ProcessName,A
+WinGetActiveTitle,tableset     ;,tableset,xab,yab,xabc,yabc                                    ;change
+if tableset not in %exclist%
+If (tableset!=table9 && proc="client.exe")
+{
+if tableset=%table1%
+table1=0
+else
+if tableset=%table2%
+table2=0
+else
+if tableset=%table3%
+table3=0
+else
+if tableset=%table4%
+table4=0
+else
+if tableset=%table5%
+table5=0
+else
+if tableset=%table6%
+table6=0
+else
+if tableset=%table7%
+table7=0
+else
+if tableset=%table8%
+table8=0
+else
+if tableset=%table9%
+table9=0
+else
+if tableset=%table10%
+table10=0
+else
+if tableset=%table11%
+table11=0
+else
+if tableset=%table12%
+table12=0
+else
+count+=1
+if table9!=0                               ;change
+tableholder=%table9%
+table9=%tableset%                          ;change
+;MsgBox, Tableholder, %tableholder%       
+
+if tableholder!=0
+{
+;MsgBox, Pass3
+if table1=0
+table1=%tableholder%
+else
+if table2=0
+table2=%tableholder%
+else
+if table3=0
+table3=%tableholder%
+else
+if table4=0
+table4=%tableholder%
+else
+if table5=0
+table5=%tableholder%
+else
+if table6=0
+table6=%tableholder%
+else
+if table7=0
+table7=%tableholder%
+else
+if table8=0
+table8=%tableholder%
+else
+if table9=0
+table9=%tableholder%
+else
+if table10=0
+table10=%tableholder%
+else
+if table11=0
+table11=%tableholder%
+else
+if table12=0
+table12=%tableholder%
+else
+{
+MsgBox,262144,,TOO MANY TABLES.....OVERFLOW.....table left unassigned: %tableholder%
+count-=1
+}
+}
+}
+tableset:=
+tableholder:=
+;Msgbox, Table 1: %table1% Table: %table2a% TABLECOUNTER: %count%
+Return
+
+;----------------------------------------
+
+^0::                                                         ;REASSIGN TABLE 10
+tableset:=
+tableholder:=
+SetTitleMatchMode, 2
+WinGet,proc,ProcessName,A
+WinGetActiveTitle,tableset     ;,tableset,xab,yab,xabc,yabc                                    ;change
+if tableset not in %exclist%
+If (tableset!=table10 && proc="client.exe")
+{
+if tableset=%table1%
+table1=0
+else
+if tableset=%table2%
+table2=0
+else
+if tableset=%table3%
+table3=0
+else
+if tableset=%table4%
+table4=0
+else
+if tableset=%table5%
+table5=0
+else
+if tableset=%table6%
+table6=0
+else
+if tableset=%table7%
+table7=0
+else
+if tableset=%table8%
+table8=0
+else
+if tableset=%table9%
+table9=0
+else
+if tableset=%table10%
+table10=0
+else
+if tableset=%table11%
+table11=0
+else
+if tableset=%table12%
+table12=0
+else
+count+=1
+if table10!=0                               ;change
+tableholder=%table10%
+table10=%tableset%                          ;change
+;MsgBox, Tableholder, %tableholder%       
+
+if tableholder!=0
+{
+;MsgBox, Pass3
+if table1=0
+table1=%tableholder%
+else
+if table2=0
+table2=%tableholder%
+else
+if table3=0
+table3=%tableholder%
+else
+if table4=0
+table4=%tableholder%
+else
+if table5=0
+table5=%tableholder%
+else
+if table6=0
+table6=%tableholder%
+else
+if table7=0
+table7=%tableholder%
+else
+if table8=0
+table8=%tableholder%
+else
+if table9=0
+table9=%tableholder%
+else
+if table10=0
+table10=%tableholder%
+else
+if table11=0
+table11=%tableholder%
+else
+if table12=0
+table12=%tableholder%
+else
+{
+MsgBox,262144,,TOO MANY TABLES.....OVERFLOW.....table left unassigned: %tableholder%
+count-=1
+}
+}
+}
+tableset:=
+tableholder:=
+;Msgbox, Table 1: %table1% Table: %table2a% TABLECOUNTER: %count%
+Return
+
+;----------------------------------------
+
+^[::                                                         ;REASSIGN TABLE 11
+tableset:=
+tableholder:=
+SetTitleMatchMode, 2
+WinGet,proc,ProcessName,A
+WinGetActiveTitle,tableset     ;,tableset,xab,yab,xabc,yabc                                    ;change
+if tableset not in %exclist%
+If (tableset!=table11 && proc="client.exe")
+{
+if tableset=%table1%
+table1=0
+else
+if tableset=%table2%
+table2=0
+else
+if tableset=%table3%
+table3=0
+else
+if tableset=%table4%
+table4=0
+else
+if tableset=%table5%
+table5=0
+else
+if tableset=%table6%
+table6=0
+else
+if tableset=%table7%
+table7=0
+else
+if tableset=%table8%
+table8=0
+else
+if tableset=%table9%
+table9=0
+else
+if tableset=%table10%
+table10=0
+else
+if tableset=%table11%
+table11=0
+else
+if tableset=%table12%
+table12=0
+else
+count+=1
+if table11!=0                               ;change
+tableholder=%table11%
+table10=%tableset11%                          ;change
+;MsgBox, Tableholder, %tableholder%       
+if tableholder!=0
+{
+;MsgBox, Pass3
+if table1=0
+table1=%tableholder%
+else
+if table2=0
+table2=%tableholder%
+else
+if table3=0
+table3=%tableholder%
+else
+if table4=0
+table4=%tableholder%
+else
+if table5=0
+table5=%tableholder%
+else
+if table6=0
+table6=%tableholder%
+else
+if table7=0
+table7=%tableholder%
+else
+if table8=0
+table8=%tableholder%
+else
+if table9=0
+table9=%tableholder%
+else
+if table10=0
+table10=%tableholder%
+else
+if table11=0
+table11=%tableholder%
+else
+if table12=0
+table12=%tableholder%
+else
+{
+MsgBox,262144,,TOO MANY TABLES.....OVERFLOW.....table left unassigned: %tableholder%
+count-=1
+}
+}
+}
+tableset:=
+tableholder:=
+;Msgbox, Table 1: %table1% Table: %table2a% TABLECOUNTER: %count%
+Return
+
+;----------------------------------------
+
+^]::                                                         ;REASSIGN TABLE 12
+tableset:=
+tableholder:=
+SetTitleMatchMode, 2
+WinGet,proc,ProcessName,A
+WinGetActiveTitle,tableset     ;,tableset,xab,yab,xabc,yabc                                    ;change
+if tableset not in %exclist%
+If (tableset!=table12 && proc="client.exe")
+{
+if tableset=%table1%
+table1=0
+else
+if tableset=%table2%
+table2=0
+else
+if tableset=%table3%
+table3=0
+else
+if tableset=%table4%
+table4=0
+else
+if tableset=%table5%
+table5=0
+else
+if tableset=%table6%
+table6=0
+else
+if tableset=%table7%
+table7=0
+else
+if tableset=%table8%
+table8=0
+else
+if tableset=%table9%
+table9=0
+else
+if tableset=%table10%
+table10=0
+else
+if tableset=%table11%
+table11=0
+else
+if tableset=%table12%
+table12=0
+else
+count+=1
+if table12!=0                               ;change
+tableholder=%table12%
+table12=%tableset%                          ;change
+;MsgBox, Tableholder, %tableholder%       
+
+if tableholder!=0
+{
+;MsgBox, Pass3
+if table1=0
+table1=%tableholder%
+else
+if table2=0
+table2=%tableholder%
+else
+if table3=0
+table3=%tableholder%
+else
+if table4=0
+table4=%tableholder%
+else
+if table5=0
+table5=%tableholder%
+else
+if table6=0
+table6=%tableholder%
+else
+if table7=0
+table7=%tableholder%
+else
+if table8=0
+table8=%tableholder%
+else
+if table9=0
+table9=%tableholder%
+else
+if table10=0
+table10=%tableholder%
+else
+if table11=0
+table11=%tableholder%
+else
+if table12=0
+table12=%tableholder%
+else
+{
+MsgBox,262144,,TOO MANY TABLES.....OVERFLOW.....table left unassigned: %tableholder%
+count-=1
+}
+}
+}
+tableset:=
+tableholder:=
+;Msgbox, Table 1: %table1% Table: %table2a% TABLECOUNTER: %count%
+Return
+
+;----------------------------------/AUTOBETBOX/FRAME COME HERE
+
+autoact:
+AutoAct()
+settimer,autoact,-10
+Return
+
+AutoAct(){
+global aacheck
+global tb
+global client
+global exclist
+global movet
+global id123
+MouseGetPos, , , id123, control
+WinGetTitle, movet,ahk_id %id123%
+WinGet,procaa,ProcessName,%movet%
+if !WinActive(movet)
+  {
+  if movet contains 0`),9`),8`),7`),6`),5`),4`),3`),2`),1`),`#
+    if(tb!=1 &&aacheck=0 && procaa="client.exe")
+      WinActivate, %movet%
+  }
+}
+Return
+
+
+FrameAuto:
+SetKeyDelay, -1
+SetTitleMatchMode, 2
+WinWaitActive, ahk_class SWT_Window0
+tablename:=TableCheck()
+if tablename!=-1
+  {
+  WinGetActiveStats,frametitle,frame_w,frame_h,frame_x,frame_y
+  if frametoggle=1
+	{
+    frame_c = 0
+    frame_c[0] = 0x000FF
+    frame_t = %fthick%                    ; thickness
+	fx:=.364815*frame_w
+	fy:=.598063*frame_h
+    Gui,  2:-Caption +AlwaysOnTop +Owner
+    Gui, 2:Color, Black
+    Gui, 2:Show, w%frame_w% h%frame_h% x%frame_x% y%frame_y% NA, Frame Test
+	DrawsFrame:
+    WinGet, hw_frame, id, Frame Test
+    WinSet, Transcolor, Black, ahk_id %hw_frame%
+    hdc_frame := GetDC( hw_frame )
+    ; buffer
+    hdc_buffer := CreateCompatibleDC( hdc_frame )
+    hbm_buffer := CreateCompatibleBitmap( hdc_frame, a_ScreenWidth, a_ScreenHeight )
+    SelectObject( hdc_buffer, hbm_buffer )
+    h_region := CreateRectRgn( 0, 0, 0, 0 )
+    DrawFrame( cx-frame_w//2, cy-frame_h//2, frame_w, frame_h, frame_t, frame_c[%frame_c%]  )
+	}
+  ;;;;;;;;;;;;;;;;;;;;;Loop WinGet	if w!=Frame_w  frame_w=w GoSub<---------try to get to redraw when moved
+  ;Sleep,100
+	;MsgBox, FlagLobbyCheck
+	
+	if amtoggle=1
+	  {
+	  WaitMost()
+	  /*
+	  if tablemode=1
+	    {
+		mwcx:=.8065*frame_w
+	    mwcy:=.9567*frame_h
+	    bbx1:=.6444*frame_w
+	    bby1:=.9165*frame_h
+		}
+	  else
+	    {
+		mwcx:=.070746*frame_w
+	    mwcy:=.866834*frame_h
+	    bbx1:=.502183*frame_w
+	    bby1:=.876923*frame_h
+		}
+	  PixelGetColor, pcol, mwcx, mwcy
+	  */
+	  MouseMove, frame_w*.5682, frame_h*.7848
+	  }        ;NEED TO FI THIS AREA
+	  /*
+    if bbtoggle=1
+	  {
+      WaitMost()
+	  if tablemode=1
+	    {
+	    mwcx:=.8065*frame_w
+	    mwcy:=.9567*frame_h
+	    bbx1:=.6434*frame_w
+	    bby1:=.9138*frame_h
+	    PixelGetColor, pcol, mwcx, mwcy
+	    if pcol=%barcol%
+	      ControlClick,x%bbx1% y%bby1%,%tablename%,,l,1, 
+		}
+	  else
+	    {
+	    bbx1:=.501852*frame_w
+	    bby1:=.876513*frame_h
+	    mcx1:=.758491*frame_w
+	    mcy1:=.848485*frame_h
+	    mcx2:=.779197*frame_w
+	    mcy2:=.873508*frame_h
+	    ;MsgBox, scroll
+	    PixelSearch,outx,outy,mcx1,mcy1,mcx2,mcy2,barcol
+	    if ErrorLevel=0
+          ControlClick,x%bbx1% y%bby1%,%tablename%,,l,,NA
+		}
+	  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;ADD if for draw frame to move it
+      }
+*/
+	}
+	
+    WinWaitNotActive, %frametitle%
+	; frametitle1=%frametitle%
+	; Loop
+	  ; {
+	  ; WinGetActiveStats,frametitle1,aaaa,bbbb,cccc,dddd
+	  ; WinMove,Frame Test,aaaa,bbbb,cccc,dddd
+	  ; if frametitle1!=%frametitle%
+	    ; Break
+	  ; }
+	  
+	if frametoggle=1
+	  {
+	  ;Gui, 2:Destroy
+	  ;MsgBox, ggg
+      DrawFrame( 0, 0, 0, 0, 0, 0, true )
+   
+      DeleteObject( h_region )
+      DeleteObject( hbm_buffer )
+   
+      DeleteDC( hdc_frame )
+      DeleteDC( hdc_buffer )
+      }
+	SetTimer, FrameAuto,-10
+Return
+
+TableFrame(frametitle,frame_w,frame_h,frame_x,frame_y){
+  {
+  global hdc_frame, hdc_buffer, h_region, hbm_buffer, fthick, frame_c, frame_c[0], fx, fy, hw_frame, frame_t
+    frame_c = 0
+    frame_c[0] = 0x000FF
+    frame_t = %fthick%                    ; thickness
+	fx:=.364815*frame_w
+	fy:=.598063*frame_h 
+    Gui,  2:-Caption +AlwaysOnTop +owner
+    Gui, 2:Color, Black
+	Gui, 2: add,text,w100 h100 x100 y100, 
+    Gui, 2:Show, w%frame_w% h%frame_h% x%frame_x% y%frame_y% NA, Frame Test
+    WinGet, hw_frame, id, Frame Test
+    WinSet, Transcolor, Black, ahk_id %hw_frame%
+    hdc_frame := GetDC( hw_frame )
+    hdc_buffer := CreateCompatibleDC( hdc_frame )
+    hbm_buffer := CreateCompatibleBitmap( hdc_frame, a_ScreenWidth, a_ScreenHeight )
+    SelectObject( hdc_buffer, hbm_buffer )
+    h_region := CreateRectRgn( 0, 0, 0, 0 )
+    DrawFrame( cx-frame_w//2, cy-frame_h//2, frame_w, frame_h, frame_t, frame_c[%frame_c%]  )
+	}
+}
+Return
+
+FrameDelete(){
+	  ;Gui, 2:Destroy
+	  ;MsgBox, ggg
+	  global hdc_frame, hdc_buffer, h_region, hbm_buffer
+      DrawFrame( 0, 0, 0, 0, 0, 0, true )
+   
+      DeleteObject( h_region )
+      DeleteObject( hbm_buffer )
+   
+      DeleteDC( hdc_frame )
+      DeleteDC( hdc_buffer )
+      }
+
+DrawFrame( p_x, p_y, p_w, p_h, p_t, p_c, p_restore=false )
+{
+   global   hdc_frame, hdc_buffer, h_region, hbm_buffer
+   static   buffer_state, old_x, old_y, old_w, old_h
+   
+   SRCCOPY   = 0x00CC0020
+   
+   if ( p_x < 0 )
+      p_x = 0
+   if ( p_y < 0 )
+      p_y = 0
+      
+   t_x := a_ScreenWidth-p_w
+   if ( p_x > t_x )
+      p_x := t_x
+      
+   t_y := a_ScreenHeight-p_h
+   if ( p_y > t_y )
+      p_y := t_y
+   
+   if ( buffer_state = "full" )
+   {
+      DllCall( "gdi32.dll\BitBlt", "uint", hdc_frame, "int", old_x, "int", old_y, "int", old_w, "int", old_h, "uint", hdc_buffer, "int", 0, "int", 0, "uint", SRCCOPY )
+      
+      if ( p_restore )
+         return
+   }
+   else
+      buffer_state = full
+      
+   old_x := p_x
+   old_y := p_y
+   old_w := p_w
+   old_h := p_h
+
+   DllCall( "gdi32.dll\BitBlt", "uint", hdc_buffer, "int", 0, "int", 0, "int", p_w, "int", p_h, "uint", hdc_frame, "int", p_x, "int", p_y, "uint", SRCCOPY )
+
+   DllCall( "gdi32.dll\SetRectRgn", "uint", h_region, "int", p_x, "int", p_y, "int", p_x+p_w, "int", p_y+p_h )
+
+   h_brush := DllCall( "gdi32.dll\CreateSolidBrush", "uint", p_c )
+
+   DllCall( "gdi32.dll\FrameRgn", "uint", hdc_frame, "uint", h_region, "uint", h_brush, "int", p_t, "int", p_t )
+
+   DeleteObject( h_brush )
+}
+
+CreateCompatibleDC( p_dc )
+{
+   return, DllCall( "gdi32.dll\CreateCompatibleDC", "uint", p_dc )
+}
+
+DeleteDC( p_dc )
+{
+   DllCall( "gdi32.dll\DeleteDC", "uint", p_dc )
+}
+
+GetDC( p_hw )
+{
+   return, DllCall( "GetDC", "uint", p_hw )
+}
+
+DeleteObject( p_object )
+{
+   DllCall( "gdi32.dll\DeleteObject", "uint", p_object )
+}
+
+SelectObject( p_dc, p_bitmap )
+{
+   DllCall( "gdi32.dll\SelectObject", "uint", p_dc, "uint", p_bitmap )
+}
+
+CreateCompatibleBitmap( p_dc, p_w, p_h )
+{
+   return, DllCall( "gdi32.dll\CreateCompatibleBitmap", "uint", p_dc, "int", p_w, "int", p_h )
+}
+
+CreateRectRgn( p_x1, p_y1, p_x2, p_y2 )
+{
+   return, DllCall( "gdi32.dll\CreateRectRgn", "int", p_x1, "int", p_y1, "int", p_x2, "int", p_y2 )
+}
+
+Return
+
+;----------------------------------------;Custom color
+/*
+CustCol:
+SetTitleMatchMode,2
+WinWaitActive,%client%
+  {
+  WinGetActiveStats, Titlea, Widtha, Heighta, Xa, Ya
+  If (Titlea!=lobby&&Titlea!=hh&&Titlea!=login&&Titlea!=lobbydc)
+    {
+    PixelGetColor,barcol,.8065*Widtha,.9567*HeightA
+	IniWrite, %barcol%, %A_WorkingDir%\playersetup.ini, colscheme, custcol
+    MsgBox,262144,,New color saved.
+    } 
+  }
+Return
+
+*/
+
+;----------------------------------------;Layout saver								
+NewLayout:
+EscLayout=U
+Table1=0
+Table2=0
+Table3=0
+Table4=0
+Table5=0
+Table6=0
+Table7=0
+Table8=0
+Table9=0
+Table10=0
+Table11=0
+Table12=0
+table13=0
+table14=0
+table15=0
+table16=0
+table17=0
+table18=0
+layoutcount:=0
+esclayout:=
+
+
+
+Loop
+  {
+  InputBox,plan,LayoutManager,Please Enter 2 4 6 8 10 12 14 16 or 18 to save a layout with that many tables.
+  If (plan=2||plan=4||plan=6||plan=8||plan=10||plan=12||plan=14||plan=16||plan=18)
+    Break
+  else
+    MsgBox, 4, , Invalid input.  Would you like to continue?  Pressing No will exit Layout Manager.
+    ifMsgBox,No
+      {
+      GoSub, Hotkey15
+	  Return
+	  }
+  }
+
+IfExist, %A_WorkingDir%\%plan%layout.txt
+  {
+  MsgBox, 4,, LAYOUT %plan% HAS ALREADY BEEN SAVED.  IF YOU CONTINUE, YOUR OLD LAYOUT WILL BE LOST.  DO YOU WANT TO CONTINUE?
+  IfMsgBox, No
+    Return 
+  }
+MsgBox,262144,,Please make sure you open %plan% tables and arrange them in the fashion your prefer before continuing.
+SetTimer,LayoutTT,-100
+;MsgBox, %esclayout%
+While (layoutcount<plan)
+  {
+  ;MsgBox, In While
+    if esclayout=D
+    {
+	GoSub, Hotkey15
+	Return
+	}
+  MsgBox,262144,,Please close this message, click a table and then hold the S key.  Keep in mind that the layout manager will arrange tables in the order in which you click (If you are playing 3 tables those tables will be placed as 1,2,3 matched in the order you clicked during this setup).
+  ;MsgBox, KEYWAIT
+  if esclayout=D
+    {
+	GoSub, Hotkey15
+	Return
+	}
+  KeyWait, S, D
+  KeYWait, S, U
+
+ ;MsgBox, PAssed
+  tablename:=TableCheck()
+if (tablename!=-1 && WinActive(tablename) && esclayout!=D)
+    {
+    SetTitleMatchMode,2
+    WinGetActiveStats,layout,layoutw,layouth,layoutx,layouty
+    If(layout!=lobby&&layout!=hh&&layout!=login&&layout!=lobbydc&&layout!=table1&&layout!=table2&&layout!=table3&&layout!=table4&&layout!=table5&&layout!=table6&&layout!=table7&&layout!=table8&&layout!=table9&&layout!=table10&&layout!=table11&&layout!=table12&&layout!=table13&&layout!=table14&&layout!=table15&&layout!=table16&&layout!=table17&&layout!=table18)
+      {
+      if layoutcount=0
+        {
+        table1=%layout%
+        x1=%layoutx%
+        y1=%layouty%
+        w1=%layoutw%
+        h1=%layouth%
+        layoutcount+=1
+        MsgBox,262144,,Table 1 assigned`n%layout%
+        }
+      else if layoutcount=1
+        {
+        table2=%layout%
+        x2=%layoutx%
+        y2=%layouty%
+        w2=%layoutw%
+        h2=%layouth%
+        layoutcount+=1
+        MsgBox, Table 2 assigned`n%layout%
+        }
+      else if layoutcount=2
+        {
+        table3=%layout%
+        x3=%layoutx%
+        y3=%layouty%
+        w3=%layoutw%
+        h3=%layouth%
+        layoutcount+=1
+		MsgBox, Table 3 assigned`n%layout%
+        }
+      else if layoutcount=3
+        {
+        table4=%layout%
+        x4=%layoutx%
+        y4=%layouty%
+        w4=%layoutw%
+        h4=%layouth%
+        layoutcount+=1
+		MsgBox, Table 4 assigned`n%layout%
+        }
+      else if layoutcount=4
+        {
+        table5=%layout%
+        x5=%layoutx%
+        y5=%layouty%
+        w5=%layoutw%
+        h5=%layouth%
+        layoutcount+=1
+		MsgBox, Table 5 assigned`n%layout%
+        }
+      else if layoutcount=5
+        {
+        table6=%layout%
+        x6=%layoutx%
+        y6=%layouty%
+        w6=%layoutw%
+        h6=%layouth%
+        layoutcount+=1
+		MsgBox, Table 6 assigned`n%layout%
+        }
+      else if layoutcount=6
+        {
+        table7=%layout%
+        x7=%layoutx%
+        y7=%layouty%
+        w7=%layoutw%
+        h7=%layouth%
+        layoutcount+=1
+		MsgBox, Table 7 assigned`n%layout%
+        }
+      else if layoutcount=7
+        {
+        table8=%layout%
+        x8=%layoutx%
+        y8=%layouty%
+        w8=%layoutw%
+        h8=%layouth%
+        layoutcount+=1
+		MsgBox, Table 8 assigned`n%layout%
+        }
+      else if layoutcount=8
+        {
+        table9=%layout%
+        x9=%layoutx%
+        y9=%layouty%
+        w9=%layoutw%
+        h9=%layouth%
+        layoutcount+=1
+		MsgBox, Table 9 assigned`n%layout%
+        }
+      else if layoutcount=9
+        {
+        table10=%layout%
+        x10=%layoutx%
+        y10=%layouty%
+        w10=%layoutw%
+        h10=%layouth%
+        layoutcount+=1
+		MsgBox, Table 10 assigned`n%layout%
+        }
+      else if layoutcount=10
+        {
+        table11=%layout%
+        x11=%layoutx%
+        y11=%layouty%
+        w11=%layoutw%
+        h11=%layouth%
+        layoutcount+=1
+		MsgBox, Table 11 assigned`n%layout%
+        }
+      else if layoutcount=11
+        {
+        table12=%layout%
+        x12=%layoutx%
+        y12=%layouty%
+        w12=%layoutw%
+        h12=%layouth%
+        layoutcount+=1
+		MsgBox, Table 12 assigned`n%layout%
+        }
+      else if layoutcount=12
+        {
+        table13=%layout%
+        x13=%layoutx%
+        y13=%layouty%
+        w13=%layoutw%
+        h13=%layouth%
+        layoutcount+=1
+		MsgBox, Table 13 assigned`n%layout%
+        }
+      else if layoutcount=13
+        {
+        table14=%layout%
+        x14=%layoutx%
+        y14=%layouty%
+        w14=%layoutw%
+        h14=%layouth%
+        layoutcount+=1
+		MsgBox, Table 14 assigned`n%layout%
+        }
+      else if layoutcount=14
+        {
+        table15=%layout%
+        x15=%layoutx%
+        y15=%layouty%
+        w15=%layoutw%
+        h15=%layouth%
+        layoutcount+=1
+		MsgBox, Table 15 assigned`n%layout%
+        }
+      else if layoutcount=15
+        {
+        table16=%layout%
+        x16=%layoutx%
+        y16=%layouty%
+        w16=%layoutw%
+        h16=%layouth%
+        layoutcount+=1
+		MsgBox, Table 16 assigned`n%layout%
+        }
+      else if layoutcount=16
+        {
+        table17=%layout%
+        x17=%layoutx%
+        y17=%layouty%
+        w17=%layoutw%
+        h17=%layouth%
+        layoutcount+=1
+		MsgBox, Table 17 assigned`n%layout%
+        }
+      else if layoutcount=17
+        {
+        table18=%layout%
+        x18=%layoutx%
+        y18=%layouty%
+        w18=%layoutw%
+        h18=%layouth%
+        layoutcount+=1
+		MsgBox, Table 18 assigned`n%layout%
+        }
+      }  ;endlobby check
+
+    else
+	  {
+      MsgBox, 4,Saving New Layout, Selected table already assigned. Please select another.  Pressing No will exit Layout Manager.
+      If (MsgBox,No|| esclayout=D)
+	    {
+        GoSub, Hotkey15
+		Return
+		}
+	  }
+    } ;end ifWin
+	else
+	  {
+      MsgBox, 4,Saving New Layout, Not a table.  Please select again.  Pressing No will exit Layout Manager.
+      If (MsgBox,No||esclayout=D)
+	    {
+        GoSub, Hotkey15
+		Return
+		}
+	  }
+  }  ;end while
+if esclayout=D
+  {
+  GoSub, Hotkey15
+  Return
+  }
+
+Loop, %plan%
+  {
+  ;x123:=% x%A_index%
+  ;y123:=% y%A_index%
+  ;w123:=% w%A_index%
+  ;h123:=% h%A_index%
+  ;MsgBox, %x123%
+  ;MsgBox, %A_Index%
+  IniWrite, % x%A_Index%, %A_WorkingDir%\playersetup.ini, %plan%layout, x%a_Index%
+  IniWrite, % y%A_Index%, %A_WorkingDir%\playersetup.ini, %plan%layout, y%a_Index%
+  IniWrite, % w%A_Index%, %A_WorkingDir%\playersetup.ini, %plan%layout, w%a_Index%
+  IniWrite, % h%A_Index%, %A_WorkingDir%\playersetup.ini, %plan%layout, h%a_Index%
+  }  
+
+;FILE APPEND HERE
+
+SetTimer, LayoutTT,off
+GoSub, Hotkey15
+;SetTimer,LayoutTT, off
+MsgBox, %plan% Table Layout Saved
+Tooltip
+Return
+
+LayoutTT:
+if layoutcount>0
+  lassign=`n`nLast Table Assigned: %layout%
+ToolTip, NEW LAYOUT IN PROGRESS`n`nClick on table and press S to save`n`n%layoutcount% of %plan% tables assigned %lassign%`n`nHOLD ESCAPE TO EXIT LAYOUT SAVER.
+SetTimer,LayoutTT, On
+GetKeyState, esclayout, Esc
+if esclayout=D
+  {
+  SetTimer, LayoutTT,off
+  GoSub, Hotkey15 ;Purge
+  Tooltip
+  Exit
+  ;MsgBox, %EscLayout% just pressed
+  }
+Return
+
+
+;---------------------------------------------Layout Saver End
+GuiClose:
+handle_exit:
+   DrawFrame( 0, 0, 0, 0, 0, 0, true )
+   
+   DeleteObject( h_region )
+   DeleteObject( hbm_buffer )
+   
+   DeleteDC( hdc_frame )
+   DeleteDC( hdc_buffer )s
+ WinClose, ahk_id %hw_frame%
+ RestoreSystemCursor()
+ExitApp
+
+
+
+VersionCheck:
+currversion=% UrlDownloadToVar(versurl)
+Return
+
+PowerCheck:
+power=% UrlDownloadToVar(powerurl)
+;MsgBox, power %power%
+Return
+
+NewsCheck:
+news=% UrlDownloadToVar(newsurl)
+;MsgBox, news %news%
+Return
+
+UrlDownloadToVar(URL, Proxy="", ProxyBypass="") {
+AutoTrim, Off
+hModule := DllCall("LoadLibrary", "str", "wininet.dll")
+
+If (Proxy != "")
+AccessType=3
+Else
+AccessType=1
+;INTERNET_OPEN_TYPE_PRECONFIG                    0   // use registry configuration
+;INTERNET_OPEN_TYPE_DIRECT                       1   // direct to net
+;INTERNET_OPEN_TYPE_PROXY                        3   // via named proxy
+;INTERNET_OPEN_TYPE_PRECONFIG_WITH_NO_AUTOPROXY  4   // prevent using java/script/INS
+
+io_hInternet := DllCall("wininet\InternetOpenA"
+, "str", "" ;lpszAgent
+, "uint", AccessType
+, "str", Proxy
+, "str", ProxyBypass
+, "uint", 0) ;dwFlags
+
+iou := DllCall("wininet\InternetOpenUrlA"
+, "uint", io_hInternet
+, "str", url
+, "str", "" ;lpszHeaders
+, "uint", 0 ;dwHeadersLength
+, "uint", 0x80000000 ;dwFlags: INTERNET_FLAG_RELOAD = 0x80000000 // retrieve the original item
+, "uint", 0) ;dwContext
+
+If (ErrorLevel != 0 or iou = 0) {
+DllCall("FreeLibrary", "uint", hModule)
+return 0
+}
+
+
+VarSetCapacity(buffer, 512, 0)
+VarSetCapacity(NumberOfBytesRead, 4, 0)
+Loop
+{
+  irf := DllCall("wininet\InternetReadFile", "uint", iou, "uint", &buffer, "uint", 512, "uint", &NumberOfBytesRead)
+  NOBR = 0
+  Loop 4  ; Build the integer by adding up its bytes. - ExtractInteger
+    NOBR += *(&NumberOfBytesRead + A_Index-1) << 8*(A_Index-1)
+  IfEqual, NOBR, 0, break
+  ;BytesReadTotal += NOBR
+  DllCall("lstrcpy", "str", buffer, "uint", &buffer)
+  res = %res%%buffer%
+}
+StringTrimRight, res, res, 0
+
+DllCall("wininet\InternetCloseHandle",  "uint", iou)
+DllCall("wininet\InternetCloseHandle",  "uint", io_hInternet)
+DllCall("FreeLibrary", "uint", hModule)
+AutoTrim, on
+return, res
+}
+Return
+
+GuiSize:
+;mintraytoggle=1
+;MSgBox, %A_eventInfo%  ;test code
+If (A_EventInfo=1&&mintraytoggle=1)
+    {
+	Menu,Tray,Icon
+	Gui, Hide
+	}
+Return
+	
+Restore:
+gui +lastfound
+WinShow
+WinRestore
+WinActivate
+Menu,Tray,NoIcon
+Return
+	
+Return
+
+ ; MsgBox nothing is down
+; Return
+WaitMost(){ ;missing the numpad and most of the kays that don't produce visable characters (like the f keys)
+Down=1
+While, Down {
+ Down=0
+ Loop 127 {
+  If GetKeyState(Chr(A_Index),"P")
+   Down=1
+  }
+  Loop 12 {
+  If GetKeyState("F"(A_Index),"P")  ;;;;;;;;F Keys
+   Down=1
+  }
+  Loop 10 {
+  If GetKeyState("Numpad"(A_Index-1),"P")  ;;;;;;;;F Keys
+   {
+   Down=1
+   }
+  }
+  If GetKeyState("NumpadDiv","P")
+    Down=1
+  If GetKeyState("NumpadAdd","P")
+    Down=1
+  If GetKeyState("NumpadSub","P")
+    Down=1
+  If GetKeyState("NumpadMult","P")
+    Down=1
+  If GetKeyState("Shift","P")
+   Down=1
+  If GetKeyState("Control","P")
+   Down=1
+  If GetKeyState("LWin","P")
+   Down=1
+  If GetKeyState("RWin","P")
+   Down=1
+  If GetKeyState("Lbutton","P")
+   Down=1
+  If GetKeyState("Rbutton","P")
+   Down=1
+  If GetKeyState("Xbutton1","P")
+   Down=1
+  If GetKeyState("Xbutton2","P")
+   Down=1
+  If GetKeyState("Mbutton","P")
+   Down=1
+ ;Tooltip, %down%`n`n%A_Index%
+ }
+}
+Return
+
+TableCheck(){
+SetTitleMatchMode,2
+WinGetActiveTitle,actt
+WinGet,proc,ProcessName,%actt%
+if actt contains 0`),9`),8`),7`),6`),5`),4`),3`),2`),1`),`#
+  if proc=client.exe
+    Return %actt%
+Return -1
+}
+Return
+
+
+;------------------
+PotBetCol(tcx,tcy,tcx1,tcy1,tcx2,tcy2,tcx3,tcy3,actt){
+global aftoggle
+SetTitleMatchMode, 3
+WinGetPos,abcx,abcy,widtha,heighta,%actt%
+if widtha<520
+  {
+  tcx:=tcx1*widtha
+  tcy:=tcy1*heighta
+  }
+else if widtha<620
+  {
+  ;MSgBox, fl
+  tcx:=tcx2*widtha
+  tcy:=tcy2*heighta
+  }  
+else if widtha<720
+  {
+  ;MSgBox, fl
+  tcx:=tcx3*widtha
+  tcy:=tcy3*heighta
+  }  
+else
+  {
+  tcx:=tcx*widtha
+  tcy:=tcy*heighta
+  }
+if aftoggle=1
+  {  
+  cx1:=.363324*widtha
+  cy1:=.8125*heighta
+  cx2:=cx1+1
+  cy2:=.849057*heighta
+  PixelSearch, ovx, ovy, cx1, cy1, cx2, cy2, 0x7D7D00, 30,fast
+  if ErrorLevel=0
+    {
+    ;MsgBox, %tcx%,%tcy%
+    SetSystemCursor(A_ScriptDir "\misc\blank.cur")
+    MouseGetPos,pbxxx,pbyyy
+    BlockInput, MouseMove
+    Mousemove,30,30
+    PixelGetColor,tc1,tcx,tcy
+    MouseMove,tcx,tcy
+    sleep,200            
+    tooltip
+    PixelGetColor,tc2,tcx,tcy
+    ;tc3=%tc1%
+    If (tc1!=tc2 && WinActive(actt))	
+      { 
+      ControlClick,x%tcx% y%tcy%,%actt%,,l,1,NA    ;get rid of most of this, move return down, add variable for return
+      work=0
+      }
+    MouseMove,pbxxx,pbyyy
+    RestoreSystemCursor() 
+    BlockInput, MouseMoveOff
+    Return %work%
+	}
+  }
+else
+  {
+  cx1:=.363324*widtha
+  cy1:=.8125*heighta
+  cx2:=cx1+1
+  cy2:=.849057*heighta
+  ;MouseMove,tcx,tcy
+  ;sleep,1500
+  PixelSearch, ovx, ovy, cx1, cy1, cx2, cy2, 0x7D7D00, 30,fast
+  if ErrorLevel=0
+    ControlClick,x%tcx% y%tcy%,%actt%,,l,1,NA
+  }
+}
+Return   
+
+
+;------------------------------------------------
+/*
+BoxAction(color,x1,y1,x2,y2,clickx,clicky,tablename){
+WinGetPos,abcx,abcy,widtha,heighta,%tablename%
+x1:=x1*widtha
+y1:=y1*heighta
+x2:=x2*widtha
+y2:=y2*heighta
+clickx:=clickx*widtha
+clicky:=clicky*heighta
+if Winactive(tablename)
+  {
+  ;tooltip,boxaction
+  ControlClick,x%clickx% y%clicky%,%tablename%,,l,,NA 
+  ;msgbox, box2
+  ;PixelSearch, Px, Py,x1,y1,x2,y2, color, shade, Fast
+  ;if ErrorLevel
+  ;  Tooltip, That color was not found in the specified region.
+  ;else
+    ;{
+	;ControlClick,x%Px% y%Py%,%titlec%,,l,,NA 
+    ;tooltip, A color within %shade% shades of variation was found at X%Px% Y%Py%.
+	; Mousemove,Px,Py
+	;}
+  }
+}
+Return
+*/
+
+;---------------------------------------------------------BETCHECKRAISEFOLD FUNC
+BetCheckRaiseFold(lx1,lx2,lx3,lx4,color,fcheck){
+WinGetActivestats,tablename,widtha,heighta,widtha,heighta
+WinGet,proc,ProcessName,A
+if tablename contains 0`),9`),8`),7`),6`),5`),4`),3`),2`),1`),`#
+  if proc=client.exe
+    {
+
+	cx1:=lx1*widtha
+    cy1:=.795*heighta  ;.79555
+    cx2:=cx1+1
+    cy2:=.849057*heighta
+	;MouseMove,cx1,cy1
+	;sleep,1500
+	;Mousemove, cx2,cy2
+	;sleep,1500
+	;MsgBox, %ErrorLevel%
+    PixelSearch, ovx, ovy, cx1, cy1, cx2, cy2, %color%, 35,fast
+    if ErrorLevel=0
+      {
+	  ovy+=5
+      ControlClick,x%ovx% y%ovy%,%tablename%,,l,1,NA
+	  ;MsgBox, Beep
+	  Return 0
+	  }
+	else
+	  {
+	  cx1:=lx3*widtha
+      cy1:=.80575*heighta
+      cx2:=cx1+1
+      cy2:=.850949*heighta
+	  PixelSearch, ovx, ovy, cx1, cy1, cx2, cy2, %color%, 30,fast
+	  ;MouseMove,cx1,cy1
+	  ;Sleep,1500
+	  ;Mousemove,cx2,cy2
+	  ;sleep,1500
+      if ErrorLevel=0
+        {
+		ovy+=5
+        ControlClick,x%ovx% y%ovy%,%tablename%,,l,1,NA
+		;MsgBox,BEEP
+        Return 0
+	    }
+	  }
+	;sleep,2000
+    ;MouseMove,cx2,cy2
+	}
+}
+Return
+;------------------------------------------------------------------------------BCRF MINI
+/*
+BetCheckRaiseFoldMini(cbx1,cby1,clickx,clicky){     ;--------add  checkbox
+tablename:=TableCheck()
+if (tablename!=-1 && WinActive(tablename))
+  {
+  if cbx1!=ADDTHIS
+    chbox:=CheckBox(cbx1,cby1,tablename)
+  if (chbox!=0  && WinActive(tablename))
+    {
+    WinGetPos,abcx,abcy,widtha,heighta,%tablename%
+	checkx:=.0688860*widtha
+	checky:=.795833*heighta
+	PixelGetColor,checkcol,checkx,checky
+	if (checkcol!=0x000000||checkcol!=0x0099FF||checkcol!=0x6E5AD6||checkcol!=0x10A3C9||checkcol!=0xFE7035||checkcol!=0x65CBFF||checkcol!=0x0000FF||checkcol!=0xCCCCCC)
+	  {
+	  clickx:=clickx*widtha
+      clicky:=clicky*heighta
+	  if WinActive(tablename)
+	    ControlClick,x%clickx% y%clicky%,%tablename%,,l,,NA
+      }
+	Return
+    }
+  }
+}
+Return
+*/
+;---------------------------------CHECKBOX FUNC
+CheckBox(cbx,cby,tablename){
+WinGetPos,abcx,abcy,widtha,heighta,%tablename%
+cbx:=cbx*widtha
+cby:=cby*heighta
+PixelGetColor,checkcol,cbx,cby
+;tooltip, %checkcol%
+if ((checkcol=0x000000||checkcol=0x0099FF||checkcol=0x6E5AD6||checkcol=0x10A3C9||checkcol=0xFE7035||checkcol=0x65CBFF||checkcol=0x0000FF||checkcol=0xCCCCCC)&&WinActive(tablename))
+  {
+  ControlClick,x%cbx% y%cby%,%tablename%,,l,,NA
+  Return 0
+  }
+Return -1
+}
+Return
+
+;--------------------------------------------------Bar
+
+/*
+ScrollBar(mwcx,mwcy,mwx,mwy,tm){
+global barcol
+tablename:=TableCheck()
+if tablename!=-1
+  {
+  ;MsgBox, in
+  WinGetPos,abcx,abcy,widtha,heighta,%tablename%
+  mwcx:=mwcx*widtha
+  mwcy:=mwcy*heighta
+  mwx:=mwx*widtha
+  mwy:=mwy*heighta
+  if WinActive(tablename)
+    {
+	if tm=1
+	  {
+      PixelGetColor,pcol,mwcx,mwcy
+      if (pcol=barcol||pcol=0xCCC9C8||pcol=0x4983A1||pcol=0xAFAFAF||pcol=0x848484||pcol=0x585858||pcol=0x53B7AE||pcol=0x7383A9||pcol=0x829FAB||pcol=0x668BA1||pcol=0x3991A8||pcol=0xAF9481||pcol=0xAF8383||pcol=0x666666)
+    	ControlClick,x%mwx% y%mwy%,%tablename%,,l,,NA
+      }
+	else
+	  {
+	  mcx:=.761111*widtha
+	  mcy:=.861985*heighta
+	   ;Loop, 40
+	 	{
+	    checkx:=.0699960*widtha
+	    checky:=.795833*heighta
+		;mousemove,checkx,checky
+	    PixelGetColor,checkcol,checkx,checky
+	    if (checkcol!=0x000000&&checkcol!=0x0099FF&&checkcol!=0x6E5AD6&&checkcol!=0x10A3C9&&checkcol!=0xFE7035&&checkcol!=0x65CBFF&&checkcol!=0x0000FF&&checkcol!=0xCCCCCC)
+	      {
+          ControlClick,x%mwx% y%mwy%,%tablename%,,l,,NA
+		  Return
+		  }
+		mcx++
+	    }
+	  }
+    }
+  }
+}
+Return
+*/
+
+timebank:
+TimeBank()
+SetTimer, timebank, -300
+return
+
+Timebank(){
+WinGetActivestats,tablename,widtha,heighta,widtha,heighta
+WinGet,proc,ProcessName,A
+if tablename contains 0`),9`),8`),7`),6`),5`),4`),3`),2`),1`),`#
+  if proc=client.exe
+    {
+	cx1:=.934149*widtha
+    cy1:=.722369*heighta
+    cx2:=.971778*widtha
+    cy2:=.765789*heighta
+    PixelSearch, ovx, ovy, cx1, cy1, cx2, cy2, 0x6060F9, 20,fast
+    ;MouseMove,cx1,cy1
+    if ErrorLevel=0
+	  {
+      ControlClick,x%ovx% y%ovy%,%tablename%,,l,1,NA
+	  sleep, 500
+	  Return
+	  }
+    else
+      {
+      cx1:=.912530*widtha
+      cy1:=.813291*heighta
+      cx2:=.940898*widtha
+      cy2:=.851266*heighta
+      PixelSearch, ovx, ovy, cx1, cy1, cx2, cy2, 0x6060F9, 20,fast
+      if ErrorLevel=0
+	    {
+        ControlClick,x%ovx% y%ovy%,%tablename%,,l,1,NA
+		Sleep, 500
+		Return
+		}
+	  }
+    }
+}
+Return
+
+
+
+autobi:
+AutoBI()
+SetTimer, autobi, -100
+Return
+
+AutoBI(){
+IfWinExist, Buy In
+  {
+  sleep, 100
+  WinGetPos, abix, abiy,abiw,abih,Buy In
+  abiw := .576733*abiw
+  abih := .913690*abih
+  Waitmost()
+  ControlClick,x%abiw% y%abih%,Buy In,,l,1,NA
+  guichange=3000
+  }
+}
+Return
+
+checkreg:
+if actoggle=1
+  CheckFree()
+if tregtoggle=1
+  TournReg()
+if sitoggle=1
+  SitIn()
+SetTimer, checkreg, -200
+Return
+
+SitIn(){
+IfWinExist, ahk_class #32770
+  {
+  WinGet, id, list,ahk_class #32770,,
+  Loop, %id%
+    {
+    table := id%A_Index%
+    WinGetTitle, title, ahk_id %table%
+	WinGet,proc,ProcessName,ahk_ID %table%
+    If (proc="client.exe" && !title) ;title!="Find"&&title!="Error"&&title!="Exit"&&title!="Leave Game"&&title!="Rebuy"&&title!="Settings"&&title!="Tournament Registration Success"title!="Tournament Registration Failed"&&title!="Tournament De-registration Success"&&title!="Tournament Registration"&&title!="Join Waiting List"&&title!="Contacts"&&title!="Add Friend"&&title!="Confirm Delete Friend"&&title!="Buy in"&&proc="client.exe") ;!WinActive("ahk_group excwin")
+      {
+	  ;WaitMost()
+	  WinGetPos,x,y,w,h,ahk_id %table%
+      cx:=.302041*w
+	  cy:=.828767*h
+	  WinGetText, OutputVar, ahk_id %table%
+	  if OutputVar contains You are sitting out. 
+	    ControlClick, x%cx% y%cy%, ahk_id %table%,,,, NA
+	  }
+    }
+  }
+}
+Return
+
+CheckFree(){
+global excwin
+IfWinExist, ahk_class #32770
+  {
+  WinGet, id, list,ahk_class #32770,,
+  Loop, %id%
+    {
+    table := id%A_Index%
+    WinGetTitle, title, ahk_id %table%
+	WinGet,proc,ProcessName,ahk_ID %table%
+    If (proc="client.exe" && !title) ;title!="Find"&&title!="Error"&&title!="Exit"&&title!="Leave Game"&&title!="Rebuy"&&title!="Settings"&&title!="Tournament Registration Success"title!="Tournament Registration Failed"&&title!="Tournament De-registration Success"&&title!="Tournament Registration"&&title!="Join Waiting List"&&title!="Contacts"&&title!="Add Friend"&&title!="Confirm Delete Friend"&&title!="Buy in"&&proc="client.exe") ;!WinActive("ahk_group excwin")
+      {
+	  WaitMost()
+	  WinGetPos,x,y,w,h,ahk_id %table%
+      cx:=.302041*w
+	  cy:=.828767*h
+	  WinGetText, OutputVar, ahk_id %table%
+	  if OutputVar contains Would you prefer to check
+	    ControlClick, x%cx% y%cy%, ahk_id %table%,,,, NA
+	  }
+    }
+  }
+}
+Return
+
+TournReg(){
+SetTitleMatchMode, 1
+ifWinExist, Tournament Registration
+  {
+  WinGetPos,tx,ty,tw,th,Tournament Registration
+  clickx := .315789*tw
+  clicky := .892593*th
+  ;MouseMove,clickx,clicky
+  ControlClick,x%clickx% y%clicky%,Tournament Registration,,l,1,NA
+  }
+ifWinExist, Tournament Registration Success
+  {
+  WinGetPos,tx,ty,tw,th,Tournament Registration Success
+  clickx := .833729*tw
+  clicky := .889908*th
+  ControlClick,x%clickx% y%clicky%,Tournament Registration Success,,l,1,NA
+  }
+ifWinExist, Tournament De-registration Success
+  {
+  WinGetPos,tx,ty,tw,th,Tournament De-registration Success
+  clickx := .833729*tw
+  clicky := .889908*th
+  ControlClick,x%clickx% y%clicky%,Tournament De-registration Success,,l,1,NA
+  }
+}
+Return
+
+;------------------------------------------------Register
+hotkey22:
+Register()
+return
+
+Register(){
+global lobby
+IfWinActive, %lobby%
+  {
+  WinGetPos,rx,ry,rw,rh,%lobby%
+  clickx1:=.806202*rw
+  clicky1:=.415517*rh 
+  clickx:=.861757*rw
+  clicky:=.810764*rh
+  ControlClick,x%clickx1% y%clicky1%,%lobby%,,l,1,NA
+  ControlClick,x%clickx% y%clicky%,%lobby%,,l,1,NA
+  }
+}
+Return
+
+;-----------------------------------------------Cascade
+cascade:
+hotkey23:
+Cascade()
+Return
+
+Cascade(){
+global client, cascoff
+ifWinActive, ahk_class SWT_Window0
+  WinGetPos,xa,ya,w,h,A
+else return
+SetTitleMatchMode,1
+x:=0
+y:=0
+WinGet, id, list,ahk_class SWT_Window0,,overlay
+;test:=cascoff*(id-2)+h
+;Msgbox, %id%, %test%, %A_Screenheight%
+;if test>A_Screenheight
+;  cascoff:=A_screenheight/
+test:=
+Loop, %id%
+  {
+  table := id%A_Index%
+  WinGetTitle, title, ahk_id %table%
+  ;title:=TableCheck(title)
+  WinGet,proc,ProcessName,%title%
+  if title contains 0`),9`),8`),7`),6`),5`),4`),3`),2`),1`),`#
+  if proc=client.exe
+    {
+    WinRestore %title%
+    WinMove,%title%,,x,y,w,h
+    x:=x+cascoff
+    y:=y+cascoff
+	;test+=%cascoff%
+    }
+  }
+;test:=test+h-cascoff
+;MsgBox,%test%
+}
+Return
+
+; LOTS OF INCOMPLETE TESTING FUNCTIONS BELOW
+;---------------------------------------------------
+streetbet:
+StreetBet()
+return
+
+;need to add something so that autofire does not fire.
+StreetBet(){
+global lastcol
+global lastatitle
+global tablemode
+global barcol
+WinGetActiveTitle, atitle
+WinGetPos,abcx,abcy,widtha,heighta,%atitle%
+if (lastatitle=!atitle)
+  lastcol=-1
+if tablemode=1
+  {
+  mwcx:=.8065
+  mwcy:=.9567
+  mwcx:=mwcx*widtha
+  mwcy:=mwcy*heighta
+  mwx:=mwx*widtha
+  mwy:=mwy*heighta
+  PixelGetColor,pcol,mwcx,mwcy
+  if (pcol=barcol||pcol=0xCCC9C8||pcol=0x4983A1||pcol=0xAFAFAF||pcol=0x848484||pcol=0x585858||pcol=0x53B7AE||pcol=0x7383A9||pcol=0x829FAB||pcol=0x668BA1||pcol=0x3991A8||pcol=0xAF9481||pcol=0xAF8383||pcol=0x666666)
+	{
+	if lastcol=-1
+      street:=StreetCheck()
+    lastcol=0
+    }
+  else
+    lastcol=-1
+  }
+  else
+    {
+    mcx1:=.758476*widtha
+	mcy1:=.848470*heighta
+	mcx2:=.779212*widtha
+	mcy2:=.873523*heighta
+	PixelSearch,outx,outy,mcx1,mcy1,mcx2,mcy2,barcol,5
+	if ErrorLevel=0
+	  {
+	  if last call=-1
+        street:=StreetCheck()
+	  lastcol=0
+	  }
+    else
+	  lastcol=-1
+	}
+}
+Return
+
+StreetCheck(){
+test=1
+MsgBox, SC
+}
+Return
+
+;^n::
+barcheck:
+Barcheck()
+Return
+
+BarCheck(){
+tablename:=TableCheck()
+if tablename!=-1
+  {
+  WinGetPos,xa,ya,widtha,heighta,%tablename%
+  if tablemode=1
+    {
+	mwcx:=.671835*widtha
+    mwcy:=.924138*heighta
+	}
+  else
+    {
+	mwcx:=.548148*widtha
+    mwcy:=.874092*heighta
+	}
+  PixelGetColor,col1,mwcx,mwcy ;add loop to check multiple.
+  if col1=0x000000
+    {
+	MsgBox, Pass
+    Return 0
+    }
+  else
+    {
+	MsgBox, fail
+    return -1
+	}
+  }
+else
+  {
+  
+  }
+}
+Return
+
+;z::
+tablename:=TableCheck()
+if tablename!=-1
+  {
+  WinGetPos,xa,ya,widtha,heighta,%tablename%
+  x:=widtha*
+  y:=heighta*
+  MouseMove,x,y
+  }
+Return
+
+autosetup:
+AutoSetup()
+Return
+
+AutoSetup(){
+tooltip, WAITING FOR LOBBY.......
+WinWaitActive,`(Connected`),,,Not Logged In
+WinGetActiveTitle, ggg
+Loop, Parse, ggg,-, 
+  {
+  ;MsgBox, %A_Loopfield%
+  Stringreplace,out,A_Loopfield,%A_Space%`(Connected`),
+  Stringreplace,out2,out,%A_Space%,
+  save%a_Index%=%A_Loopfield%
+  }
+a=%save1%
+b=%out%
+;tooltip,%lobby%
+IniWrite, %b%, %A_WorkingDir%\playersetup.ini, playerset, username
+IniWrite, %a%, %A_WorkingDir%\playersetup.ini, playerset, client
+tooltip
+MsgBox,,NEW CLIENT/USER NAME SAVED,LOBBY: %a% - %b% (Connected)`nCLIENT: %a%`nUSER: %b%,5
+reload
+}
+Return
+
+#IfWinActive ahk_group excwin
+Rbutton::
+Mouseclick,Right,,,,,
+;KeyWait, RButton
+;Mouseclick,Right,,,,,U
+Return
+#IfWinActive
+
+TBOn(){
+global tb
+While(tb=1)
+  sleep,100
+}
+Return
+
+/*
+^a::
+tooltip on
+RunWait "C:\Program Files (x86)\Tesseract-OCR\tesseract.exe" "c:\Program Files (x86)\Tesseract-OCR\doc\phototest.tif" c:\fuckball,,hide
+;Run C:\fuckball.txt
+FileRead,text, C:\fuckball.txt
+FileDelete, C:\fuckball.txt
+MsgBox %text%
+Return
+
+
+
+r::
+WinGetClass, class, 
+MsgBox, The active window's class is "%class%".
+sleep, 100
+ifWinActive, ahk_class client.exe
+  MsgBox, client.exe
+Return
+
+m::
+setTitleMatchMode,2
+WinGet, id, list,Carbon Poker,,
+Loop, %id%
+  {
+  table1 := id%A_Index%
+  WinGetTitle, title, ahk_id %table%
+  ;ControlSend,,{escape},ahk_id %leave%
+  wingettitle,table,ahk_id %table1%
+  ifWinActive, %table%
+  MsgBox, %table%
+  }
+return
+
+n::
+counttt=1
+WinGet, id, list,%client% -,,%lobby%
+Loop, %id%
+  {
+  counttt++
+  table := id%counttt%
+  WinGetTitle, title, ahk_id %table%
+  WinActivate, %title%,
+  Break
+  }
+Return 
+
+
+
+^b::
+ MouseGetPos, mx12,my12
+ WinGetactivestats,t12,w12,h12,x12,y12
+ WinGetClass,abc,%t12%
+ PixelGetColor,mcolor, mx12,my12
+ hp:=my12/h12
+ wp:=mx12/w12
+ ToolTip,x %mx12%   y %my12%`n`n  w %w12%   h %h12%`n`nwidth percent %wp%`n`nheight percent %hp% `n`ncolor  %mcolor%`n`n %abc%
+ clipboard=%mcolor%
+ ;clipboard=%t12%
+ KeyWait, Esc,D
+ Tooltip
+ Return
+ */
+
+/*
+winpop:
+CheckFree2()
+SetTimer, winpop,-100
+Return
+ 
+CheckFree2(){
+global client ;delete?
+global excwin ;delete?
+IfWinExist, ahk_class #32770
+  {
+  WinGet, id, list,ahk_class #32770 ;SWT_Window0,,
+  Loop, %id%
+    {
+    popup := id%A_Index%
+    WinGetTitle, title, ahk_id %popup%
+	WinGet,proc,ProcessName,ahk_ID %popup%
+    If (proc="client.exe" && !title) ;title!="Find"&&title!="Error"&&title!="Exit"&&title!="Leave Game"&&title!="Rebuy"&&title!="Settings"&&title!="Tournament Registration Success"title!="Tournament Registration Failed"&&title!="Tournament De-registration Success"&&title!="Tournament Registration"&&title!="Join Waiting List"&&title!="Contacts"&&title!="Add Friend"&&title!="Confirm Delete Friend"&&title!="Buy in"&&proc="client.exe") ;!WinActive("ahk_group excwin")
+      {
+	  ptitle := ParentWin(popup)
+	  WaitMost()
+	  WinGetPos, px,py,pw,ph,%ptitle%
+	  WinGetPos,x,y,w,h,ahk_id %popup%
+	  wtf := h/ph
+      if wtf>.5
+        {
+	    if(w>h)
+	      WinClose, ahk_id %popup%
+	    }
+	  }
+    }
+  }
+}
+Return
+*/
+
+/*
+c::
+WinGet,rrrr, ID,A
+MsgBox, %rrrr%
+tttt := ParentWin(rrrr)
+MsgBox, %tttt%
+Return
+*/
+
+ParentWin(popup){
+ID := DllCall("GetParent", UInt,WinExist("ahk_id" popup)), ID := !ID ? WinExist("ahk_id" popup) : ID
+WinGetClass, Class, ahk_id %id%
+WinGetTitle, title, ahk_id %id%
+Return %title%
+}
+Return
+
+SetSystemCursor(Cursor) {
+    return DllCall("SetSystemCursor", "UInt", DllCall("LoadCursorFromFile", "Str", Cursor), "Int", "32512")
+}
+
+RestoreSystemCursor() {
+    return DllCall("SystemParametersInfo", "UInt", 0x57, "UInt", 0, "UInt", 0, "UInt", 0)
+}
+
+SNGReg:
+SNGReg(lobby)
+Return
+
+SNGReg(lobby){
+MouseGetPos,x10,y10
+ControlClick , x%x10% y%y10%, %lobby%,,r,1,NA
+sleep,200
+ifWinActive, %lobby%
+  Send, {down}{down}{enter}
+}
+Return
+
+
+/*
+MakeBitmapInfoHeader(ByRef bi, width, height, bpp) {
+  VarSetCapacity(bi, 40, 0)
+  NumPut(40, bi)     ; size of the structure
+  NumPut(width, bi, 4)  ; image width
+  NumPut(height, bi, 8)  ; image height, positive means lines go bottom to top
+  NumPut(1, bi, 12, "UShort")   ; planes, has to be 1
+  NumPut(bpp, bi, 14, "UShort") ; bits per pixel
+  NumPut(0, bi, 16)  ; zero means compression is BI_RGB, or uncompressed
+}
+
+AllocateDIBBuf(ByRef buf, width, height, bpp) {
+  bytesperpix := bpp//8
+  linebytes := (width*bytesperpix + 3)//4 * 4 ; round up to the next multiple of 4 bytes
+  VarSetCapacity(buf, linebytes*height)
+  return linebytes*height
+}
+
+DIBGetPixel(ByRef dibbuf, dibwidth, dibheight, dibbpp, x, y, ByRef r, ByRef g, ByRef b) {
+  bytesperpix := dibbpp//8
+  linebytes := (dibwidth*bytesperpix + 3)//4 * 4 ; round up to the next multiple of 4 bytes
+  b := NumGet(dibbuf, (dibheight-1-y)*linebytes+x*bytesperpix, "UChar")
+  g := NumGet(dibbuf, (dibheight-1-y)*linebytes+x*bytesperpix+1, "UChar")
+  r := NumGet(dibbuf, (dibheight-1-y)*linebytes+x*bytesperpix+2, "UChar")
+}
+
+
+
+/::
+id := WinExist("Carbon Poker")
+MsgBox, %id%
+gotten_dc:=       dllcall("GetDC",                    uint,id)
+created_dc:=      dllcall("CreateCompatibleDC",       uint,gotten_dc)
+wingetpos,,,w,h,% "ahk_id" id
+created_bitmap:=  dllcall("CreateCompatibleBitmap",   uint,gotten_dc,   int,w,   int,h)
+dllcall("SelectObject",  uint,created_dc,   uint,created_bitmap)
+dllcall("PrintWindow",  uint,id,   uint,created_dc,    uint,0)
+
+MakeBitmapInfoHeader(bmi, w, h, 24)
+AllocateDIBBuf(dibbuf, w, h, 24)
+DllCall("GetDIBits", "UInt", gotten_dc, "UInt", created_bitmap, "UInt", 0, "UInt", h, "UInt", &dibbuf, "UInt", &bmi, "UInt", 0)
+DIBGetPixel(dibbuf, w, h, 24, 150, 150, r, g, b)
+
+getpixel_pixel := dllcall("GetPixel",   uint,created_dc,  int,150,    int,150)
+gpb := getpixel_pixel >> 16
+gpg := (getpixel_pixel >> 8) & 255
+gpr := getpixel_pixel & 255
+
+MsgBox, Pixel at 150`, 150 is %r% %g% %b% vs %gpr% %gpg% %gpb%
+
+dllcall("DeleteObject",  uint,created_bitmap)
+dllcall("ReleaseDC",     uint,id,   uint,gotten_dc)
+dllcall("DeleteDC",      uint,created_dc)
+Return
+
+
+l::
+RegRead,key, HKEY_CURRENT_USER,\Software\Microsoft\Windows\CurrentVersion\Themes,CurrentTheme
+;MsgBox % RegKeyType("HKEY_CURRENT_USER", "\Software\Microsoft\Windows\CurrentVersion\Themes", "TEMP")
+MsgBox, %key%
+Return
+
+j::
+MsgBox % RegKeyType("HKEY_CURRENT_USER", "\Software\Microsoft\Windows\CurrentVersion\Themes", "RegSZ")
+return
+
+RegKeyType(RootKey, SubKey, ValueName)  ; This function returns the type of the specified value.
+{
+    Loop, %RootKey%, %SubKey%
+        if (A_LoopRegName = ValueName)
+            return A_LoopRegType
+    return "Error"
+}
+
+
+q::
+MouseGetPos,,,,cont
+tooltip, %cont%
+ControlGetText, words, %cont%, A,
+MsgBox, %words%
+Return
+
+z::
+WinGetActiveTitle, table1223
+cx:=.302041*w
+cy:=.828767*h
+WinGetText, OutputVar, %table1223%
+MsgBox, %OutputVar%
+Return
+*/
