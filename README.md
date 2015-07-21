@@ -1,2 +1,4 @@
 # MergeKeys
-Merge Netwok Hotkeys
+Merge Netwok Hotkeys in Autohotkey (AHk)
+
+Use at your own risk
