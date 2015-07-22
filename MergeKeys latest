@@ -4185,6 +4185,37 @@ While(tb=1)
 }
 Return
 
+ParentWin(popup){
+ID := DllCall("GetParent", UInt,WinExist("ahk_id" popup)), ID := !ID ? WinExist("ahk_id" popup) : ID
+WinGetClass, Class, ahk_id %id%
+WinGetTitle, title, ahk_id %id%
+Return %title%
+}
+Return
+
+SetSystemCursor(Cursor) {
+    return DllCall("SetSystemCursor", "UInt", DllCall("LoadCursorFromFile", "Str", Cursor), "Int", "32512")
+}
+
+RestoreSystemCursor() {
+    return DllCall("SystemParametersInfo", "UInt", 0x57, "UInt", 0, "UInt", 0, "UInt", 0)
+}
+
+SNGReg:
+SNGReg(lobby)
+Return
+
+SNGReg(lobby){
+MouseGetPos,x10,y10
+ControlClick , x%x10% y%y10%, %lobby%,,r,1,NA
+sleep,200
+ifWinActive, %lobby%
+  Send, {down}{down}{enter}
+}
+Return
+
+;---------------Mostly testing functions below this point
+
 /*
 ^a::
 tooltip on
@@ -4293,36 +4324,6 @@ tttt := ParentWin(rrrr)
 MsgBox, %tttt%
 Return
 */
-
-ParentWin(popup){
-ID := DllCall("GetParent", UInt,WinExist("ahk_id" popup)), ID := !ID ? WinExist("ahk_id" popup) : ID
-WinGetClass, Class, ahk_id %id%
-WinGetTitle, title, ahk_id %id%
-Return %title%
-}
-Return
-
-SetSystemCursor(Cursor) {
-    return DllCall("SetSystemCursor", "UInt", DllCall("LoadCursorFromFile", "Str", Cursor), "Int", "32512")
-}
-
-RestoreSystemCursor() {
-    return DllCall("SystemParametersInfo", "UInt", 0x57, "UInt", 0, "UInt", 0, "UInt", 0)
-}
-
-SNGReg:
-SNGReg(lobby)
-Return
-
-SNGReg(lobby){
-MouseGetPos,x10,y10
-ControlClick , x%x10% y%y10%, %lobby%,,r,1,NA
-sleep,200
-ifWinActive, %lobby%
-  Send, {down}{down}{enter}
-}
-Return
-
 
 /*
 MakeBitmapInfoHeader(ByRef bi, width, height, bpp) {
