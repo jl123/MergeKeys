@@ -21,13 +21,13 @@ SetMouseDelay,-1
 SetControlDelay, -1
 
 IfNotExist, %A_ScriptDir%\Setup Files
-  {
+{
   FileCreateDir, %A_ScriptDir%\Setup Files
   sleep, 100
   SetWorkingDir, %A_ScriptDir%\Setup Files
   FileMove,c:\*layout.txt,%A_WorkingDir%
   FileMove,c:\playersetup.ini,%A_WorkingDir%
-  }
+}
   
 ifNotExist, %A_ScriptDir%\Setup Files\amazon.gif
   URLDownloadToFile,http://www.runbetterpoker.com/joe/amazon.gif,%A_ScriptDir%\Setup Files\amazon.gif
@@ -41,10 +41,10 @@ if version!=%currversion%
 
 GoSub, PowerCheck
 if power!=1
-  {
+{
   MsgBox, MergeKeys has been shut down .  Please see RunBetterPoker.com or TwoPlusTwo.com thread for more information.
   GoSub, handle_exit
-  }
+}
 
 GoSub, NewsCheck
 if news!=0
@@ -54,9 +54,9 @@ yesbox:=1
 count:=0
 run:=0
 loop,18
-  {
+{
   table%A_Index%=0
-  }
+}
 
 listselect1:=
 listselect2:=
@@ -365,10 +365,10 @@ ReadIni:
 
 IniRead, username, %A_WorkingDir%\playersetup.ini, playerset, username
 if username=ERROR
-  {
+{
   MsgBox, MergeKeys has not been setup. Open Player Setup tab to complete setup.
   username:=
-  }
+}
 IniRead, client, %A_WorkingDir%\playersetup.ini, playerset, client
 if client=ERROR
   client:=
@@ -415,14 +415,14 @@ exclist=%lobby%,%lobbydc%,%lobbyrc%,%hh%,%login%,%conn%,%load%,%chat%,ax),anded)
 
 ;-------------------------HOTKEY READ
 Loop,23
-  {
+{
   ;tooltip, %A_Index%
   hk=hk%a_Index%
   IniRead, hk, %A_WorkingDir%\playersetup.ini, hkeys, %hk%
   hotkey%a_Index%=%hk%
   Hotkey, IfWinActive, ahk_class SWT_Window0 
   Hotkey, %hk%, hotkey%a_Index%,UseErrorLevel
-  }
+}
 
 ;---------------------------------------Mouse Buttons Read
 IniRead, xb1, %A_WorkingDir%\playersetup.ini, mousebuttons, xb1
@@ -648,58 +648,50 @@ Return
 ;---------------------------------------Mouse Button Assugnment   GET CORRECT HK ASSIGNMENTS
 MBSelect:
 if mselect=Full Pot
-  {
+{
   Hotkey, IfWinActive, ahk_class SWT_Window0
   Hotkey, %buttonselect%, hotkey4
-  }
-else
-if mselect=3/4 pot
-  {
+}
+else if mselect=3/4 pot
+{
   Hotkey, IfWinActive, ahk_class SWT_Window0
   Hotkey, %buttonselect%, hotkey3
-  }
-else
-if mselect=2/3 pot
-  {
+}
+else if mselect=2/3 pot
+{
   Hotkey, IfWinActive, ahk_class SWT_Window0
   Hotkey, %buttonselect%, hotkey2
-  }
-else
-if mselect=1/2 pot
-  {
+}
+else if mselect=1/2 pot
+{
   Hotkey, IfWinActive, ahk_class SWT_Window0
   Hotkey, %buttonselect%, hotkey1
-  }
-else
-if mselect=All-in
-  {
+}
+else if mselect=All-in
+{
   Hotkey, IfWinActive, ahk_class SWT_Window0
   Hotkey, %buttonselect%, hotkey5
-  }
-  else
-if mselect=Fold
-  {
+}
+else if mselect=Fold
+{
   Hotkey, IfWinActive, ahk_class SWT_Window0
   Hotkey, %buttonselect%, hotkey9 ;--------took out ~
-  }
-else
-if mselect=Bet/Raise
-  {
+}
+else if mselect=Bet/Raise
+{
   Hotkey, IfWinActive, ahk_class SWT_Window0
   Hotkey, %buttonselect%, hotkey6
-  }
-else
-if mselect=Check
-  {
+}
+else if mselect=Check
+{
   Hotkey, IfWinActive,ahk_class SWT_Window0
   Hotkey, %buttonselect%, hotkey7
-  }
-else
-if mselect=Call
-  {
+}
+else if mselect=Call
+{
   Hotkey, IfWinActive, ahk_class SWT_Window0
   Hotkey, %buttonselect%, hotkey8
-  }
+}
 else
   mselect=none
 Return
@@ -749,20 +741,21 @@ HotKey20()
 ;tooltip,off
 Return
 
-HotKey20(){
-global lobby
-global client
+HotKey20()
+{
+  global lobby
+  global client
 
-;sleep,100
-WinWaitActive,ahk_class SWT_Window0
-if WinActive("ahk_class SWT_Window0")
+  ;sleep,100
+  WinWaitActive,ahk_class SWT_Window0
+  if WinActive("ahk_class SWT_Window0")
   {
-  WinGetActiveTitle, tables
-  WinSet Bottom,, %tables%
-  ;WinWaitNotActive,%tables%
-  sleep,50
-  WinActivate,ahk_class SWT_Window0,,%lobby%
-  Return
+    WinGetActiveTitle, tables
+    WinSet Bottom,, %tables%
+    ;WinWaitNotActive,%tables%
+    sleep,50
+    WinActivate,ahk_class SWT_Window0,,%lobby%
+    Return
   }
 }
 Return
@@ -774,14 +767,15 @@ HotKey21()
 ;tooltip,off
 Return
 
-HotKey21(){
-global lobby
-global client
-;sleep,100
-WinWaitActive,ahk_class SWT_Window0
-sleep,50
-WinActivateBottom,ahk_class SWT_Window0 ,,%lobby%
-;sleep, 100
+HotKey21()
+{
+  global lobby
+  global client
+  ;sleep,100
+  WinWaitActive,ahk_class SWT_Window0
+  sleep,50
+  WinActivateBottom,ahk_class SWT_Window0 ,,%lobby%
+  ;sleep, 100
 }
 Return
 
@@ -795,13 +789,13 @@ BetUp:
 BetUp("-1")
 Return
 
-BetUp(key){
-global tablemode
-tablename:=TableCheck()
-if tablename!=-1
-  WheelAction(tablename, "WheelUp")
-else
-  if key=0
+BetUp(key)
+{
+  global tablemode
+  tablename:=TableCheck()
+  if tablename!=-1
+    WheelAction(tablename, "WheelUp")
+  else if key=0
     Send {Up}
   else
     Click WheelUp
@@ -820,34 +814,35 @@ BetDown:
 BetDown("-1")
 Return
 
-BetDown(key){
-global tablemode
-tablename:=TableCheck()
-if tablename!=-1
-  WheelAction(tablename, "WheelDown")
-else
-  if key=0
+BetDown(key)
+{
+  global tablemode
+  tablename:=TableCheck()
+  if tablename!=-1
+    WheelAction(tablename, "WheelDown")
+  else if key=0
     Send {Down}
   else
     Click WheelDown
 }
 Return
 
-WheelAction(tablename, direction){
-WinGetPos,x,y,w,h,%tablename%
-MouseGetPos,mx,my
-cx:=.719136*w
-cy:=.957447*h
-;MsgBox, %cx%    %cy%
-BlockInput, MouseMove
-SetSystemCursor(A_ScriptDir "\misc\blank.cur")
-MouseMove,cx,cy
-sleep, 50
-MouseClick,%direction%, %cx%, %cy%
-MouseMove,mx,my
-RestoreSystemCursor()
-;ControlClick,x%cx% y%cy%,%tablename%,,%direction%,1,NA
-BlockInput, MouseMoveOff
+WheelAction(tablename, direction)
+{
+  WinGetPos,x,y,w,h,%tablename%
+  MouseGetPos,mx,my
+  cx:=.719136*w
+  cy:=.957447*h
+  ;MsgBox, %cx%    %cy%
+  BlockInput, MouseMove
+  SetSystemCursor(A_ScriptDir "\misc\blank.cur")
+  MouseMove,cx,cy
+  sleep, 50
+  MouseClick,%direction%, %cx%, %cy%
+  MouseMove,mx,my
+  RestoreSystemCursor()
+  ;ControlClick,x%cx% y%cy%,%tablename%,,%direction%,1,NA
+  BlockInput, MouseMoveOff
 }
 Return
 ;----------------------------------------
@@ -860,24 +855,25 @@ HotKey1()
 aacheck--
 Return
 
-HotKey1(){
-global aftoggle
-global tablemode
-tcx:=.338315
-tcy:=.929474
-tcx1:=.309278
-tcy1:=.921788
-tcx2:=.327586
-tcy2:=.934896
-tcx3:=.347926
-tcy3:=.938053
-tablename:=TableCheck()
-if tablename!=-1
+HotKey1()
+{
+  global aftoggle
+  global tablemode
+  tcx:=.338315
+  tcy:=.929474
+  tcx1:=.309278
+  tcy1:=.921788
+  tcx2:=.327586
+  tcy2:=.934896
+  tcx3:=.347926
+  tcy3:=.938053
+  tablename:=TableCheck()
+  if tablename!=-1
   {
-  worked:=PotBetCol(tcx,tcy,tcx1,tcy1,tcx2,tcy2,tcx3,tcy3,tablename)
-  sleep,100
-  if (worked=0 && aftoggle=1)
-    Hotkey6()
+    worked:=PotBetCol(tcx,tcy,tcx1,tcy1,tcx2,tcy2,tcx3,tcy3,tablename)
+    sleep,100
+    if (worked=0 && aftoggle=1)
+      Hotkey6()
   }
 }
 WaitMost()
@@ -890,23 +886,24 @@ HotKey2()
 aacheck--
 Return
 
-HotKey2(){
-global aftoggle
-global tablemode
-tcx:=.372959
-tcy:=.929474
-tcx1:=.351240
-tcy1:=.930168
-tcx2:=.3659
-tcy2:=.932292
-tcx3:=.383253
-tcy3:=.938053
-tablename:=TableCheck()
-if tablename!=-1
+HotKey2()
+{
+  global aftoggle
+  global tablemode
+  tcx:=.372959
+  tcy:=.929474
+  tcx1:=.351240
+  tcy1:=.930168
+  tcx2:=.3659
+  tcy2:=.932292
+  tcx3:=.383253
+  tcy3:=.938053
+  tablename:=TableCheck()
+  if tablename!=-1
   {
-  worked:=PotBetCol(tcx,tcy,tcx1,tcy1,tcx2,tcy2,tcx3,tcy3,tablename)
-  if (worked=0 && aftoggle=1)
-    Hotkey6()
+    worked:=PotBetCol(tcx,tcy,tcx1,tcy1,tcx2,tcy2,tcx3,tcy3,tablename)
+    if (worked=0 && aftoggle=1)
+      Hotkey6()
   }
 }
 WaitMost()
@@ -918,23 +915,24 @@ HotKey3()
 aacheck--
 Return
 
-HotKey3(){
-global aftoggle
-global tablemode
-tcx:=.411348
-tcy:=.929474
-tcx1:=.394628
-tcy1:=.922006
-tcx2:=.406130
-tcy2:=.932292
-tcx3:=.420290
-tcy3:=.938053
-tablename:=TableCheck()
-if tablename!=-1
+HotKey3() 
+{
+  global aftoggle
+  global tablemode
+  tcx:=.411348
+  tcy:=.929474
+  tcx1:=.394628
+  tcy1:=.922006
+  tcx2:=.406130
+  tcy2:=.932292
+  tcx3:=.420290
+  tcy3:=.938053
+  tablename:=TableCheck()
+  if tablename!=-1
   {
-  worked:=PotBetCol(tcx,tcy,tcx1,tcy1,tcx2,tcy2,tcx3,tcy3,tablename)
-  if (worked=0 && aftoggle=1)
-    Hotkey6()
+    worked:=PotBetCol(tcx,tcy,tcx1,tcy1,tcx2,tcy2,tcx3,tcy3,tablename)
+    if (worked=0 && aftoggle=1)
+      Hotkey6()
   }
 }
 WaitMost()
@@ -947,23 +945,24 @@ HotKey4()
 aacheck--
 Return
 
-Hotkey4(){
-global aftoggle
-global tablemode
-tcx:=.455719
-tcy:=.930
-tcx1:=.446502
-tcy1:=.924791
-tcx2:=.452107
-tcy2:=.934896
-tcx3:=.460548
-tcy3:=.938053
-tablename:=TableCheck()
-if tablename!=-1
+Hotkey4()
+{
+  global aftoggle
+  global tablemode
+  tcx:=.455719
+  tcy:=.930
+  tcx1:=.446502
+  tcy1:=.924791
+  tcx2:=.452107
+  tcy2:=.934896
+  tcx3:=.460548
+  tcy3:=.938053
+  tablename:=TableCheck()
+  if tablename!=-1
   {
-  worked:=PotBetCol(tcx,tcy,tcx1,tcy1,tcx2,tcy2,tcx3,tcy3,tablename)
-  if (worked=0 && aftoggle=1)
-    Hotkey6()
+    worked:=PotBetCol(tcx,tcy,tcx1,tcy1,tcx2,tcy2,tcx3,tcy3,tablename)
+    if (worked=0 && aftoggle=1)
+      Hotkey6()
   }
 }
 WaitMost()
@@ -976,17 +975,18 @@ HotKey5()
 aacheck--
 Return
 
-HotKey5(){
-global tablemode
-lx1:=.720478
-lx2:=lx1+1
-lx3:=.567376
-lx4:=lx3+1
-color=0x0000DB        ;0x0000C9
-BetCheckRaiseFold(lx1,lx2,lx3,lx4,color,0)
-WaitMost()
+HotKey5()
+{
+  global tablemode
+  lx1:=.720478
+  lx2:=lx1+1
+  lx3:=.567376
+  lx4:=lx3+1
+  color=0x0000DB        ;0x0000C9
+  BetCheckRaiseFold(lx1,lx2,lx3,lx4,color,0)
+  WaitMost()
 }
-Return
+  Return
 
 ;----------------------------------------Bet/Raise
 
@@ -994,17 +994,18 @@ Hotkey6:
 HotKey6()
 Return
 
-HotKey6(){
-global tablemode
-lx1:=.602878
-lx2:=lx1+1
-lx3:=.567376
-lx4:=lx3+1
-color=0x0060D2
-BetCheckRaiseFold(lx1,lx2,lx3,lx4,color,0)
-WaitMost()
+HotKey6()
+{
+  global tablemode
+  lx1:=.602878
+  lx2:=lx1+1
+  lx3:=.567376
+  lx4:=lx3+1
+  color=0x0060D2
+  BetCheckRaiseFold(lx1,lx2,lx3,lx4,color,0)
+  WaitMost()
 }
-Return
+  Return
 
 ;----------------------------------------Check
 hotkey7:
